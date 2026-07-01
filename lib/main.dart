@@ -275,6 +275,7 @@ class _FeatureCategoryContent {
     required this.summary,
     required this.heroPoints,
     required this.featureGroups,
+    this.platformGroups = const [],
   });
 
   final FeatureCategory category;
@@ -285,6 +286,7 @@ class _FeatureCategoryContent {
   final String summary;
   final List<String> heroPoints;
   final List<_FeatureGroupData> featureGroups;
+  final List<_FeatureGroupData> platformGroups;
 }
 
 class _FeatureGroupData {
@@ -305,35 +307,55 @@ const _featureCategoryContent = {
     title: 'IoT Powerful Features',
     kicker: 'Home Automation',
     summary:
-        'A focused IoT suite for smart homes, plug-and-play devices, energy visibility, and mobile-first monitoring.',
+        'A practical IoT platform plan for smart spaces, device onboarding, automation workflows, and future service expansion.',
     heroPoints: [
-      'Plug-and-play smart device onboarding',
-      'Real-time monitoring across rooms and devices',
-      'Energy dashboard with usage insights',
+      'Start with a simple smart home and device control foundation',
+      'Build in phases across monitoring, automation, and service support',
+      'Keep space for future areas like security, energy, and business IoT',
     ],
     featureGroups: [
       _FeatureGroupData(
-        title: 'Device Control',
+        title: 'Platform Foundation',
         items: [
-          'One-touch controls for connected devices',
-          'Room-wise device grouping',
-          'Schedules, scenes, and automation presets',
+          'Smart home, office, and shop automation base',
+          'Plug-and-play smart devices and retrofit controls',
+          'Mobile-first control for rooms, devices, and scenes',
         ],
       ),
       _FeatureGroupData(
-        title: 'Monitoring',
+        title: 'Core Experience',
         items: [
-          'Live device status and alerts',
-          'Power consumption dashboard',
-          'Web, Android, and iOS access',
+          'Live device status and basic alerts',
+          'Schedules, scenes, and simple automation rules',
+          'Energy usage visibility for selected devices',
         ],
       ),
       _FeatureGroupData(
-        title: 'Service Ready',
+        title: 'Service Layer',
         items: [
-          'Easy installation workflow',
-          'Customer support handoff',
-          'Device health and service history',
+          'Installation request and setup flow',
+          'Customer support and maintenance handoff',
+          'Device health, history, and upgrade planning',
+        ],
+      ),
+    ],
+    platformGroups: [
+      _FeatureGroupData(
+        title: 'Development Phases',
+        items: [
+          'Phase 1: Smart home controls, plug devices, and room grouping',
+          'Phase 2: Monitoring, alerts, schedules, and automation scenes',
+          'Phase 3: Energy reports, service support, and device health',
+          'Phase 4: Business IoT for shops, offices, rentals, and buildings',
+        ],
+      ),
+      _FeatureGroupData(
+        title: 'Expansion Areas',
+        items: [
+          'Security and safety automation',
+          'Energy optimization and billing insights',
+          'Commercial space monitoring',
+          'Partner device onboarding and marketplace support',
         ],
       ),
     ],
@@ -2403,6 +2425,10 @@ class _DetailCategoryBody extends StatelessWidget {
         _DetailHero(content: content),
         const SizedBox(height: 24),
         _DetailFeatureGrid(content: content),
+        if (content.platformGroups.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _PlatformRoadmap(content: content),
+        ],
       ],
     );
   }
@@ -2647,6 +2673,174 @@ class _DetailFeatureCard extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlatformRoadmap extends StatelessWidget {
+  const _PlatformRoadmap({required this.content});
+
+  final _FeatureCategoryContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 760;
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 20 : 26),
+          decoration: BoxDecoration(
+            color: const Color(0xFF102452),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: content.iconColor.withValues(alpha: 0.16),
+                blurRadius: 30,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.account_tree_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'IoT Platform Plan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'A high-level build path for current launch and future modules.',
+                          style: TextStyle(
+                            color: Color(0xFFD8E3FF),
+                            fontSize: 13,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 22),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: content.platformGroups
+                    .map(
+                      (group) => SizedBox(
+                        width: compact
+                            ? constraints.maxWidth
+                            : _gridWidth(constraints.maxWidth, 2, 16),
+                        child: _PlatformRoadmapCard(
+                          group: group,
+                          color: content.iconColor,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlatformRoadmapCard extends StatelessWidget {
+  const _PlatformRoadmapCard({required this.group, required this.color});
+
+  final _FeatureGroupData group;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            group.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ...group.items.asMap().entries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 11),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 23,
+                        height: 23,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${entry.key + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          entry.value,
+                          style: const TextStyle(
+                            color: Color(0xFFEAF0FF),
+                            fontSize: 13.5,
+                            height: 1.38,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
         ],
       ),
     );
