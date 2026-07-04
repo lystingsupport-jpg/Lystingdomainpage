@@ -3462,18 +3462,20 @@ class _FacilityAutomationRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: row.items
-                  .map(
-                    (item) => _AutomationElevatedButton(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final item in row.items) ...[
+                    _AutomationElevatedButton(
                       item: item,
                       color: color,
                       compact: true,
                     ),
-                  )
-                  .toList(),
+                    if (item != row.items.last) const SizedBox(width: 10),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
