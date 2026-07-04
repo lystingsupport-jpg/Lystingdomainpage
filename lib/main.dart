@@ -217,7 +217,7 @@ class _LandingPageState extends State<LandingPage> {
                                 );
                               },
                             ),
-                            const SizedBox(height: AppDesign.sectionGap),
+                            SizedBox(height: _bottomCardsTopGap(context)),
                             const _DownloadSection(),
                             const SizedBox(height: AppDesign.sectionGap),
                             const _StatsSection(),
@@ -263,6 +263,17 @@ EdgeInsets _responsivePagePadding(
   return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
 }
 
+double _bottomCardsTopGap(BuildContext context) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width < 640) {
+    return 56;
+  }
+  if (width < 900) {
+    return 110;
+  }
+  return 220;
+}
+
 enum FeatureCategory { iot, ecommerce, b2b }
 
 class _FeatureCategoryContent {
@@ -276,6 +287,7 @@ class _FeatureCategoryContent {
     required this.heroPoints,
     required this.featureGroups,
     this.platformGroups = const [],
+    this.contentSections = const [],
   });
 
   final FeatureCategory category;
@@ -287,6 +299,7 @@ class _FeatureCategoryContent {
   final List<String> heroPoints;
   final List<_FeatureGroupData> featureGroups;
   final List<_FeatureGroupData> platformGroups;
+  final List<_ContentSectionData> contentSections;
 }
 
 class _FeatureGroupData {
@@ -296,6 +309,20 @@ class _FeatureGroupData {
   });
 
   final String title;
+  final List<String> items;
+}
+
+class _ContentSectionData {
+  const _ContentSectionData({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.items,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
   final List<String> items;
 }
 
@@ -309,9 +336,9 @@ const _featureCategoryContent = {
     summary:
         'A practical IoT platform plan for smart spaces, device onboarding, automation workflows, and future service expansion.',
     heroPoints: [
-      'Start with a simple smart home and device control foundation',
-      'Build in phases across monitoring, automation, and service support',
-      'Keep space for future areas like security, energy, and business IoT',
+      'Smart automation for homes, shops, offices.',
+      'Easy Plug & Play',
+      'Mobile and web control automation workflows.',
     ],
     featureGroups: [
       _FeatureGroupData(
@@ -359,6 +386,7 @@ const _featureCategoryContent = {
         ],
       ),
     ],
+    contentSections: [],
   ),
   FeatureCategory.ecommerce: _FeatureCategoryContent(
     category: FeatureCategory.ecommerce,
@@ -2046,6 +2074,7 @@ class FeatureDetailScreen extends StatefulWidget {
 
 class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
   late FeatureCategory _selectedCategory;
+  final ScrollController _contentScrollController = ScrollController();
 
   @override
   void initState() {
@@ -2054,9 +2083,14 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
   }
 
   @override
+  void dispose() {
+    _contentScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final content = _contentFor(_selectedCategory);
-    const design = _DesignTuning();
 
     return Scaffold(
       body: Container(
@@ -2068,36 +2102,41 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
           ),
         ),
         child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: _responsivePagePadding(context, vertical: 16),
-                  child: const _TopNavigation(),
+          child: Column(
+            children: [
+              Padding(
+                padding: _responsivePagePadding(context, vertical: 16),
+                child: _SectionShell(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _DetailTopBar(content: content),
+                      const SizedBox(height: 18),
+                      _CategoryDock(
+                        selectedCategory: _selectedCategory,
+                        onSelected: (category) {
+                          if (category == _selectedCategory) {
+                            Navigator.of(context).pop();
+                            return;
+                          }
+                          setState(() => _selectedCategory = category);
+                          _contentScrollController.jumpTo(0);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _contentScrollController,
+                  primary: false,
                   padding: _responsivePagePadding(context, vertical: 0),
                   child: _SectionShell(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _HeroSection(design: design),
-                        const SizedBox(height: AppDesign.sectionGap),
-                        _DetailTopBar(content: content),
-                        const SizedBox(height: 18),
-                        _CategoryDock(
-                          selectedCategory: _selectedCategory,
-                          onSelected: (category) {
-                            if (category == _selectedCategory) {
-                              Navigator.of(context).pop();
-                              return;
-                            }
-                            setState(() => _selectedCategory = category);
-                          },
-                        ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 280),
                           switchInCurve: Curves.easeOutCubic,
@@ -2196,18 +2235,18 @@ class _CategoryDock extends StatelessWidget {
         final compact = constraints.maxWidth < 620;
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 18,
-            vertical: compact ? 12 : 16,
+            horizontal: compact ? 8 : 14,
+            vertical: compact ? 8 : 10,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x100B1F52),
-                blurRadius: 24,
-                offset: Offset(0, 12),
+                blurRadius: 18,
+                offset: Offset(0, 8),
               ),
             ],
           ),
@@ -2227,7 +2266,7 @@ class _CategoryDock extends StatelessWidget {
                   ),
                 ),
                 if (category != categories.last)
-                  SizedBox(width: compact ? 8 : 16),
+                  SizedBox(width: compact ? 6 : 12),
               ],
             ],
           ),
@@ -2264,35 +2303,35 @@ class _DockPhoneButton extends StatelessWidget {
           child: AnimatedScale(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            scale: selected ? 1.04 : 1,
+            scale: selected ? 1.02 : 1,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              width: compact ? 92 : 118,
+              width: compact ? 70 : 86,
               padding: EdgeInsets.fromLTRB(
-                compact ? 7 : 9,
-                compact ? 10 : 12,
-                compact ? 7 : 9,
-                compact ? 7 : 9,
+                compact ? 5 : 6,
+                compact ? 6 : 7,
+                compact ? 5 : 6,
+                compact ? 5 : 6,
               ),
               decoration: BoxDecoration(
                 color: selected
                     ? content.iconColor.withValues(alpha: 0.92)
                     : const Color(0xFF111827),
-                borderRadius: BorderRadius.circular(compact ? 23 : 28),
+                borderRadius: BorderRadius.circular(compact ? 18 : 22),
                 border: Border.all(
                   color: selected
                       ? content.iconColor.withValues(alpha: 0.5)
                       : Colors.white,
-                  width: selected ? 4 : 3,
+                  width: selected ? 3 : 2.5,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: content.iconColor.withValues(
                       alpha: selected ? 0.18 : 0.1,
                     ),
-                    blurRadius: selected ? 20 : 14,
-                    offset: const Offset(0, 9),
+                    blurRadius: selected ? 14 : 10,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -2310,10 +2349,10 @@ class _DockPhoneButton extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
-                        compact ? 8 : 10,
-                        compact ? 12 : 15,
-                        compact ? 8 : 10,
-                        compact ? 8 : 10,
+                        compact ? 6 : 7,
+                        compact ? 8 : 9,
+                        compact ? 6 : 7,
+                        compact ? 6 : 7,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2321,20 +2360,20 @@ class _DockPhoneButton extends StatelessWidget {
                           Center(
                             child: Container(
                               width: compact ? 26 : 34,
-                              height: compact ? 3 : 4,
+                              height: compact ? 2.5 : 3,
                               decoration: BoxDecoration(
                                 color: const Color(0xFFCBD4E8),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                             ),
                           ),
-                          SizedBox(height: compact ? 10 : 13),
+                          SizedBox(height: compact ? 7 : 8),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: compact ? 24 : 31,
-                                height: compact ? 24 : 31,
+                                width: compact ? 20 : 24,
+                                height: compact ? 20 : 24,
                                 decoration: BoxDecoration(
                                   color: content.iconColor,
                                   borderRadius: BorderRadius.circular(9),
@@ -2351,7 +2390,7 @@ class _DockPhoneButton extends StatelessWidget {
                                 child: Icon(
                                   content.icon,
                                   color: Colors.white,
-                                  size: compact ? 14 : 17,
+                                  size: compact ? 12 : 14,
                                 ),
                               ),
                               const Spacer(),
@@ -2361,7 +2400,7 @@ class _DockPhoneButton extends StatelessWidget {
                                 child: Icon(
                                   Icons.check_circle_rounded,
                                   color: content.iconColor,
-                                  size: compact ? 14 : 17,
+                                  size: compact ? 12 : 14,
                                 ),
                               ),
                             ],
@@ -2373,20 +2412,20 @@ class _DockPhoneButton extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: const Color(0xFF17233F),
-                              fontSize: compact ? 10.5 : 12,
+                              fontSize: compact ? 8.5 : 9.5,
                               fontWeight: FontWeight.w900,
                               height: 1.08,
                               letterSpacing: 0,
                             ),
                           ),
-                          SizedBox(height: compact ? 3 : 4),
+                          SizedBox(height: compact ? 2 : 2),
                           Text(
                             _dockSubtitle(content.category),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: content.iconColor,
-                              fontSize: compact ? 9.5 : 10.5,
+                              fontSize: compact ? 7.5 : 8.5,
                               fontWeight: FontWeight.w800,
                               height: 1.1,
                             ),
@@ -2423,8 +2462,15 @@ class _DetailCategoryBody extends StatelessWidget {
     return Column(
       children: [
         _DetailHero(content: content),
-        const SizedBox(height: 24),
-        _DetailFeatureGrid(content: content),
+        const SizedBox(height: 14),
+        if (content.category == FeatureCategory.iot)
+          _AutomationCarousel(color: content.iconColor)
+        else
+          _DetailFeatureGrid(content: content),
+        if (content.contentSections.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _DetailContentSections(content: content),
+        ],
         if (content.platformGroups.isNotEmpty) ...[
           const SizedBox(height: 24),
           _PlatformRoadmap(content: content),
@@ -2448,7 +2494,7 @@ class _DetailHero extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
               decoration: BoxDecoration(
                 color: content.iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(999),
@@ -2457,30 +2503,30 @@ class _DetailHero extends StatelessWidget {
                 'Powerful Features'.toUpperCase(),
                 style: TextStyle(
                   color: content.iconColor,
-                  fontSize: 11,
+                  fontSize: 9,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.1,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 7),
             Text(
               content.title,
               style: const TextStyle(
                 color: Color(0xFF17233F),
-                fontSize: 34,
+                fontSize: 24,
                 fontWeight: FontWeight.w900,
                 height: 1.08,
                 letterSpacing: 0,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 7),
             Text(
               content.summary,
               style: const TextStyle(
                 color: Color(0xFF4C5873),
-                fontSize: 16,
-                height: 1.55,
+                fontSize: 12.5,
+                height: 1.32,
               ),
             ),
           ],
@@ -2489,16 +2535,19 @@ class _DetailHero extends StatelessWidget {
         final highlights = _DetailHighlights(content: content);
 
         return Container(
-          padding: EdgeInsets.all(compact ? 22 : 30),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 14 : 18,
+            vertical: compact ? 12 : 14,
+          ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.94)),
+            color: Colors.white.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.82)),
             boxShadow: [
               BoxShadow(
-                color: content.iconColor.withValues(alpha: 0.1),
-                blurRadius: 34,
-                offset: const Offset(0, 16),
+                color: content.iconColor.withValues(alpha: 0.055),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -2507,7 +2556,7 @@ class _DetailHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     heroText,
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 10),
                     highlights,
                   ],
                 )
@@ -2515,7 +2564,7 @@ class _DetailHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(flex: 6, child: heroText),
-                    const SizedBox(width: 28),
+                    const SizedBox(width: 16),
                     Expanded(flex: 4, child: highlights),
                   ],
                 ),
@@ -2532,44 +2581,160 @@ class _DetailHighlights extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final highlights = _detailHighlightItems(content.category);
+
     return Column(
-      children: content.heroPoints
+      children: highlights
           .map(
-            (point) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: content.iconColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: content.iconColor.withValues(alpha: 0.12),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: content.iconColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      point,
-                      style: const TextStyle(
-                        color: Color(0xFF24314F),
-                        fontSize: 14,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: _DetailHighlightTile(
+                item: item,
+                color: content.iconColor,
               ),
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class _DetailHighlightItem {
+  const _DetailHighlightItem({
+    required this.icon,
+    required this.label,
+    required this.supporting,
+  });
+
+  final IconData icon;
+  final String label;
+  final String supporting;
+}
+
+List<_DetailHighlightItem> _detailHighlightItems(FeatureCategory category) {
+  return switch (category) {
+    FeatureCategory.iot => const [
+        _DetailHighlightItem(
+          icon: Icons.maps_home_work_rounded,
+          label: 'Smart Spaces',
+          supporting: 'Homes, shops, and offices',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.power_settings_new_rounded,
+          label: 'Plug & Play',
+          supporting: 'Quick device setup',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.phone_iphone_rounded,
+          label: 'Mobile Control',
+          supporting: 'App and web workflows',
+        ),
+      ],
+    FeatureCategory.ecommerce => const [
+        _DetailHighlightItem(
+          icon: Icons.restaurant_menu_rounded,
+          label: 'Food & Products',
+          supporting: 'Local catalog listings',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.photo_library_rounded,
+          label: 'Showroom',
+          supporting: 'Gallery-first browsing',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.insights_rounded,
+          label: 'Sales Insights',
+          supporting: 'Agent performance view',
+        ),
+      ],
+    FeatureCategory.b2b => const [
+        _DetailHighlightItem(
+          icon: Icons.business_center_rounded,
+          label: 'Pure B2B',
+          supporting: 'Wholesale workflows',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.inventory_2_rounded,
+          label: 'Catalogs',
+          supporting: 'Supplier showcases',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.groups_2_rounded,
+          label: 'Agent Search',
+          supporting: 'Product-based matching',
+        ),
+      ],
+  };
+}
+
+class _DetailHighlightTile extends StatelessWidget {
+  const _DetailHighlightTile({
+    required this.item,
+    required this.color,
+  });
+
+  final _DetailHighlightItem item;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withValues(alpha: 0.14),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              item.icon,
+              color: color,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF24314F),
+                    fontSize: 12.5,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  item.supporting,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF52617F),
+                    fontSize: 10.5,
+                    height: 1.1,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2605,6 +2770,1373 @@ class _DetailFeatureGrid extends StatelessWidget {
               .toList(),
         );
       },
+    );
+  }
+}
+
+class _AutomationCarousel extends StatefulWidget {
+  const _AutomationCarousel({required this.color});
+
+  final Color color;
+
+  @override
+  State<_AutomationCarousel> createState() => _AutomationCarouselState();
+}
+
+class _AutomationCarouselState extends State<_AutomationCarousel> {
+  final PageController _controller = PageController(viewportFraction: 0.78);
+  int _currentPage = 0;
+  int _selectedAutomationIndex = 0;
+
+  static const _items = [
+    _AutomationCarouselItem(
+      icon: Icons.home_work_rounded,
+      title: 'Home auto',
+      subtitle: 'Simple smart control for rooms, devices, and daily scenes.',
+    ),
+    _AutomationCarouselItem(
+      icon: Icons.apartment_rounded,
+      title: 'Commercial Building',
+      subtitle: 'Automation workflows for offices, shared spaces, and teams.',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _goTo(int page) {
+    final target = page.clamp(0, _items.length - 1);
+    _controller.animateToPage(
+      target,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+
+        return Container(
+          padding: EdgeInsets.all(compact ? 14 : 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.94)),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Automation areas',
+                      style: TextStyle(
+                        color: widget.color,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  _CarouselIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    enabled: _currentPage > 0,
+                    onTap: () => _goTo(_currentPage - 1),
+                  ),
+                  const SizedBox(width: 8),
+                  _CarouselIconButton(
+                    icon: Icons.arrow_forward_rounded,
+                    enabled: _currentPage < _items.length - 1,
+                    onTap: () => _goTo(_currentPage + 1),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: compact ? 155 : 175,
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _items.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                      _selectedAutomationIndex = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return AnimatedPadding(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 7 : 10,
+                        vertical: index == _currentPage ? 0 : 8,
+                      ),
+                      child: _AutomationCarouselCard(
+                        item: _items[index],
+                        color: widget.color,
+                        selected: index == _currentPage,
+                        onTap: () {
+                          setState(() {
+                            _currentPage = index;
+                            _selectedAutomationIndex = index;
+                          });
+                          _goTo(index);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _items.asMap().entries.map((entry) {
+                  final selected = entry.key == _currentPage;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: selected ? 24 : 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? widget.color
+                          : widget.color.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              _AutomationImagePanel(
+                color: widget.color,
+                assetPath: _assetForAutomationIndex(_selectedAutomationIndex),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+String _assetForAutomationIndex(int index) {
+  return switch (index) {
+    0 => 'assets/images/smart_home_automation_table.png',
+    _ => 'assets/images/facility_automation_requirements.png',
+  };
+}
+
+class _AutomationCarouselItem {
+  const _AutomationCarouselItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+}
+
+class _AutomationCarouselCard extends StatelessWidget {
+  const _AutomationCarouselCard({
+    required this.item,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _AutomationCarouselItem item;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: item.title,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: selected
+                    ? [color, const Color(0xFF0A1D4A)]
+                    : [Colors.white, const Color(0xFFF4F8FF)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected ? color.withValues(alpha: 0.25) : Colors.white,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: selected ? 0.2 : 0.08),
+                  blurRadius: selected ? 18 : 12,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? Colors.white.withValues(alpha: 0.16)
+                        : color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    color: selected ? Colors.white : color,
+                    size: 23,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected ? Colors.white : const Color(0xFF17233F),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    height: 1.08,
+                    letterSpacing: 0,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  item.subtitle,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected
+                        ? const Color(0xFFDDE7FF)
+                        : const Color(0xFF4C5873),
+                    fontSize: 12.5,
+                    height: 1.25,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AutomationImagePanel extends StatelessWidget {
+  const _AutomationImagePanel({
+    required this.color,
+    required this.assetPath,
+  });
+
+  final Color color;
+  final String assetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFDCE8FF)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x140E2B73),
+            blurRadius: 22,
+            offset: Offset(0, 12),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: _NativeAutomationTable(
+          showFacilities: assetPath.contains('facility_automation'),
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _NativeAutomationTable extends StatelessWidget {
+  const _NativeAutomationTable({
+    required this.showFacilities,
+    required this.color,
+  });
+
+  final bool showFacilities;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return showFacilities
+        ? _FacilityAutomationTable(color: color)
+        : _SmartHomeNativeTable(color: color);
+  }
+}
+
+class _AutomationButtonData {
+  const _AutomationButtonData({
+    required this.icon,
+    required this.label,
+    this.supporting,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? supporting;
+}
+
+class _FacilityAutomationRowData {
+  const _FacilityAutomationRowData({
+    required this.icon,
+    required this.facility,
+    required this.items,
+  });
+
+  final IconData icon;
+  final String facility;
+  final List<_AutomationButtonData> items;
+}
+
+class _AutomationElevatedButton extends StatelessWidget {
+  const _AutomationElevatedButton({
+    required this.item,
+    required this.color,
+    this.compact = false,
+  });
+
+  final _AutomationButtonData item;
+  final Color color;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: item.supporting == null
+          ? item.label
+          : '${item.label}\n${item.supporting}',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            debugPrint('Automation selected: ${item.label}');
+          },
+          child: Ink(
+            width: compact ? 92 : null,
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 8 : 10,
+              vertical: compact ? 9 : 10,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withValues(alpha: 0.12)),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(item.icon, color: color, size: compact ? 22 : 24),
+                const SizedBox(height: 6),
+                Text(
+                  item.label,
+                  maxLines: compact ? 3 : 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF0C1D4A),
+                    fontSize: compact ? 9.5 : 12,
+                    height: 1.15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SmartHomeNativeTable extends StatelessWidget {
+  const _SmartHomeNativeTable({required this.color});
+
+  final Color color;
+
+  static const _rows = [
+    _AutomationButtonData(
+      icon: Icons.lightbulb_outline_rounded,
+      label: 'Smart Lighting Control',
+      supporting: 'Lights, dimming, schedules, scenes',
+    ),
+    _AutomationButtonData(
+      icon: Icons.mode_fan_off_outlined,
+      label: 'Fan & Appliance Control',
+      supporting: 'Fans, AC, TV, geyser, water motor, appliances',
+    ),
+    _AutomationButtonData(
+      icon: Icons.home_outlined,
+      label: 'Room-Wise Automation',
+      supporting: 'Hall, bedroom, kitchen, office, parking groups',
+    ),
+    _AutomationButtonData(
+      icon: Icons.grid_view_rounded,
+      label: 'Scenes & Modes',
+      supporting: 'Morning, Night, Custom modes',
+    ),
+    _AutomationButtonData(
+      icon: Icons.calendar_month_outlined,
+      label: 'Schedule-Based Automation',
+      supporting: 'Time and routine based actions',
+    ),
+    _AutomationButtonData(
+      icon: Icons.curtains_outlined,
+      label: 'Curtain & Gate Automation',
+      supporting: 'Main gate, garage door, sliding doors',
+    ),
+    _AutomationButtonData(
+      icon: Icons.device_thermostat_rounded,
+      label: 'Climate Control',
+      supporting: 'AC, thermostat, air purifier, ventilation',
+    ),
+    _AutomationButtonData(
+      icon: Icons.water_drop_outlined,
+      label: 'Water Motor / Pump Automation',
+      supporting: 'Tank/time/manual motor control',
+    ),
+    _AutomationButtonData(
+      icon: Icons.directions_run_rounded,
+      label: 'Motion Sensing Automation',
+      supporting: 'Movement-based actions',
+    ),
+    _AutomationButtonData(
+      icon: Icons.settings_remote_outlined,
+      label: 'Proximity Sensing Automation',
+      supporting: 'Nearby presence-based actions',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBFF),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Smart Home Automation',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF0C1D4A),
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Connected controls, routines, and sensor-ready automation for smart spaces',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF52617F), fontSize: 13),
+          ),
+          const SizedBox(height: 18),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 980
+                  ? 5
+                  : constraints.maxWidth >= 700
+                      ? 4
+                      : 2;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: _rows
+                    .map(
+                      (row) => SizedBox(
+                        width: _gridWidth(constraints.maxWidth, columns, 12),
+                        child: _AutomationHomeButton(item: row, color: color),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AutomationHomeButton extends StatelessWidget {
+  const _AutomationHomeButton({required this.item, required this.color});
+
+  final _AutomationButtonData item;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          debugPrint('Automation selected: ${item.label}');
+        },
+        child: Ink(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.08),
+                blurRadius: 14,
+                offset: const Offset(0, 7),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(item.icon, color: color, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF0C1D4A),
+                        fontSize: 13,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (item.supporting != null) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        item.supporting!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF52617F),
+                          fontSize: 11.5,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FacilityAutomationTable extends StatelessWidget {
+  const _FacilityAutomationTable({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = _facilityAutomationRows();
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBFF),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Facility Automation Requirements',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF0C1D4A),
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'IoT automation use cases by commercial and community facility type',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF52617F), fontSize: 13),
+          ),
+          const SizedBox(height: 18),
+          ...rows.map(
+            (row) => _FacilityAutomationRow(row: row, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FacilityAutomationRow extends StatelessWidget {
+  const _FacilityAutomationRow({required this.row, required this.color});
+
+  final _FacilityAutomationRowData row;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDCE8FF)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 150,
+            child: Column(
+              children: [
+                Icon(row.icon, color: color, size: 36),
+                const SizedBox(height: 8),
+                Text(
+                  row.facility,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: row.items
+                  .map(
+                    (item) => _AutomationElevatedButton(
+                      item: item,
+                      color: color,
+                      compact: true,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+List<_FacilityAutomationRowData> _facilityAutomationRows() {
+  return const [
+    _FacilityAutomationRowData(
+      icon: Icons.hotel_rounded,
+      facility: 'Hotel / Lodge',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.lightbulb_outline_rounded, label: 'Room Lighting / AC'),
+        _AutomationButtonData(
+            icon: Icons.lock_open_rounded, label: 'Smart Door Access'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Lobby Lighting'),
+        _AutomationButtonData(
+            icon: Icons.plumbing_rounded, label: 'Water Pump'),
+        _AutomationButtonData(
+            icon: Icons.directions_run_rounded, label: 'Corridor Motion'),
+        _AutomationButtonData(
+            icon: Icons.energy_savings_leaf_outlined, label: 'Energy Saving'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.school_rounded,
+      facility: 'School / College',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.co_present_rounded, label: 'Classroom Lights'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Lab Safety'),
+        _AutomationButtonData(icon: Icons.badge_outlined, label: 'Attendance'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Corridor Lights'),
+        _AutomationButtonData(
+            icon: Icons.plumbing_rounded, label: 'Water Pump'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.warehouse_rounded,
+      facility: 'Warehouse / Godown',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Loading Lights'),
+        _AutomationButtonData(
+            icon: Icons.lock_open_rounded, label: 'Stock Access'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+        _AutomationButtonData(
+            icon: Icons.directions_run_rounded, label: 'After-Hours'),
+        _AutomationButtonData(
+            icon: Icons.sensor_door_outlined, label: 'Door Monitor'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+        _AutomationButtonData(icon: Icons.air_rounded, label: 'Ventilation'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.fitness_center_rounded,
+      facility: 'Gym / Fitness Center',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(icon: Icons.lock_open_rounded, label: 'Access'),
+        _AutomationButtonData(
+            icon: Icons.power_rounded, label: 'Equipment Power'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Lighting Scenes'),
+        _AutomationButtonData(
+            icon: Icons.music_note_rounded, label: 'Music / Display'),
+        _AutomationButtonData(
+            icon: Icons.door_sliding_outlined, label: 'Locker Monitor'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.spa_rounded,
+      facility: 'Salon / Spa',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Lighting Scenes'),
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(
+            icon: Icons.water_drop_outlined, label: 'Water Heater'),
+        _AutomationButtonData(
+            icon: Icons.chair_outlined, label: 'Waiting Comfort'),
+        _AutomationButtonData(
+            icon: Icons.badge_outlined, label: 'Staff Access'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.account_balance_rounded,
+      facility: 'Bank / Finance Office',
+      items: [
+        _AutomationButtonData(icon: Icons.lock_rounded, label: 'Strong Access'),
+        _AutomationButtonData(icon: Icons.dns_outlined, label: 'Server Room'),
+        _AutomationButtonData(
+            icon: Icons.battery_charging_full_rounded, label: 'UPS Power'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+        _AutomationButtonData(
+            icon: Icons.security_rounded, label: 'After-Hours'),
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.local_pharmacy_rounded,
+      facility: 'Pharmacy / Medical Store',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.device_thermostat_rounded, label: 'Fridge Monitor'),
+        _AutomationButtonData(
+            icon: Icons.battery_alert_rounded, label: 'Backup Alerts'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(
+            icon: Icons.lightbulb_outline_rounded, label: 'Lighting'),
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+        _AutomationButtonData(
+            icon: Icons.lock_rounded, label: 'Storage Access'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.shopping_cart_rounded,
+      facility: 'Supermarket / Grocery',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.device_thermostat_rounded, label: 'Cold Storage'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Display Lighting'),
+        _AutomationButtonData(
+            icon: Icons.point_of_sale_rounded, label: 'Counter Power'),
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.factory_rounded,
+      facility: 'Factory / Small Workshop',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.electrical_services_rounded, label: 'Machine Power'),
+        _AutomationButtonData(icon: Icons.air_rounded, label: 'Exhaust'),
+        _AutomationButtonData(
+            icon: Icons.health_and_safety_outlined, label: 'Worker Safety'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+        _AutomationButtonData(icon: Icons.lock_rounded, label: 'Area Access'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Loading Lights'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.co_present_rounded,
+      facility: 'Co-working Space',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.meeting_room_outlined, label: 'Meeting Room'),
+        _AutomationButtonData(icon: Icons.lock_open_rounded, label: 'Access'),
+        _AutomationButtonData(
+            icon: Icons.ac_unit_rounded, label: 'AC Schedule'),
+        _AutomationButtonData(icon: Icons.sensors_rounded, label: 'Occupancy'),
+        _AutomationButtonData(
+            icon: Icons.badge_outlined, label: 'Visitor Access'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Pantry Safety'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.celebration_rounded,
+      facility: 'Community Hall / Marriage Hall',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Stage Lighting'),
+        _AutomationButtonData(icon: Icons.ac_unit_rounded, label: 'Hall AC'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined,
+            label: 'Kitchen Safety'),
+        _AutomationButtonData(
+            icon: Icons.plumbing_rounded, label: 'Water Pump'),
+        _AutomationButtonData(icon: Icons.signpost_rounded, label: 'Signboard'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.church_rounded,
+      facility: 'Temple / Church / Prayer Hall',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Prayer Lights'),
+        _AutomationButtonData(
+            icon: Icons.volume_up_rounded, label: 'Sound System'),
+        _AutomationButtonData(
+            icon: Icons.inventory_2_outlined, label: 'Donation Box'),
+        _AutomationButtonData(
+            icon: Icons.park_outlined, label: 'Pathway Lights'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Fire / Smoke'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.ev_station_rounded,
+      facility: 'Petrol Pump / EV Charging Point',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.local_fire_department_outlined, label: 'Gas / Fire'),
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Forecourt Lights'),
+        _AutomationButtonData(
+            icon: Icons.settings_input_component_rounded, label: 'Equipment'),
+        _AutomationButtonData(
+            icon: Icons.bar_chart_rounded, label: 'Load Monitor'),
+        _AutomationButtonData(
+            icon: Icons.lock_rounded, label: 'Restricted Access'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(
+            icon: Icons.emergency_rounded, label: 'Emergency Alert'),
+      ],
+    ),
+    _FacilityAutomationRowData(
+      icon: Icons.cottage_rounded,
+      facility: 'Farmhouse / Resort',
+      items: [
+        _AutomationButtonData(
+            icon: Icons.light_mode_outlined, label: 'Outdoor Lights'),
+        _AutomationButtonData(
+            icon: Icons.garage_rounded, label: 'Gate Control'),
+        _AutomationButtonData(
+            icon: Icons.plumbing_rounded, label: 'Pump Control'),
+        _AutomationButtonData(icon: Icons.grass_rounded, label: 'Irrigation'),
+        _AutomationButtonData(icon: Icons.cottage_outlined, label: 'Room AC'),
+        _AutomationButtonData(icon: Icons.videocam_outlined, label: 'Security'),
+        _AutomationButtonData(icon: Icons.bar_chart_rounded, label: 'Energy'),
+      ],
+    ),
+  ];
+}
+
+// Kept temporarily while the image-based mockups are phased out.
+// ignore: unused_element
+class _InteractiveAutomationImage extends StatelessWidget {
+  const _InteractiveAutomationImage({
+    required this.assetPath,
+    required this.color,
+  });
+
+  final String assetPath;
+  final Color color;
+
+  bool get _isFacilityTable => assetPath.contains('facility_automation');
+
+  @override
+  Widget build(BuildContext context) {
+    final aspectRatio = _isFacilityTable ? 864 / 1821 : 1536 / 1024;
+    final hotspots = _isFacilityTable
+        ? _facilityAutomationHotspots()
+        : _smartHomeAutomationHotspots();
+
+    return AspectRatio(
+      aspectRatio: aspectRatio,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                assetPath,
+                fit: BoxFit.fill,
+                errorBuilder: (context, error, stackTrace) {
+                  return _SmartHomeAutomationFallback(color: color);
+                },
+              ),
+              ...hotspots.map(
+                (hotspot) => _ImageHotspotButton(
+                  hotspot: hotspot,
+                  color: color,
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  onTap: () {
+                    debugPrint('Automation selected: ${hotspot.label}');
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AutomationHotspot {
+  const _AutomationHotspot({
+    required this.label,
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+
+  final String label;
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+}
+
+class _ImageHotspotButton extends StatefulWidget {
+  const _ImageHotspotButton({
+    required this.hotspot,
+    required this.color,
+    required this.width,
+    required this.height,
+    required this.onTap,
+  });
+
+  final _AutomationHotspot hotspot;
+  final Color color;
+  final double width;
+  final double height;
+  final VoidCallback onTap;
+
+  @override
+  State<_ImageHotspotButton> createState() => _ImageHotspotButtonState();
+}
+
+class _ImageHotspotButtonState extends State<_ImageHotspotButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final left = widget.hotspot.x * widget.width;
+    final top = widget.hotspot.y * widget.height;
+    final targetWidth = widget.hotspot.width * widget.width;
+    final targetHeight = widget.hotspot.height * widget.height;
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: targetWidth,
+      height: targetHeight,
+      child: Tooltip(
+        message: widget.hotspot.label,
+        child: Semantics(
+          button: true,
+          label: widget.hotspot.label,
+          child: GestureDetector(
+            onTapDown: (_) => setState(() => _pressed = true),
+            onTapCancel: () => setState(() => _pressed = false),
+            onTapUp: (_) => setState(() => _pressed = false),
+            onTap: widget.onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOutCubic,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: _pressed ? 0.16 : 0.012),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: widget.color.withValues(alpha: _pressed ? 0.38 : 0.07),
+                  width: _pressed ? 1.2 : 0.7,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        widget.color.withValues(alpha: _pressed ? 0.16 : 0.045),
+                    blurRadius: _pressed ? 10 : 5,
+                    offset: Offset(0, _pressed ? 4 : 2),
+                  ),
+                ],
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+List<_AutomationHotspot> _smartHomeAutomationHotspots() {
+  const labels = [
+    'Smart Lighting Control',
+    'Fan & Appliance Control',
+    'Room-Wise Automation',
+    'Scenes & Modes',
+    'Schedule-Based Automation',
+    'Curtain & Gate Automation',
+    'Climate Control',
+    'Water Motor / Pump Automation',
+    'Motion Sensing Automation',
+    'Proximity Sensing Automation',
+  ];
+
+  return [
+    for (var index = 0; index < labels.length; index++)
+      _AutomationHotspot(
+        label: labels[index],
+        x: 0.055,
+        y: 0.277 + index * 0.069,
+        width: 0.046,
+        height: 0.048,
+      ),
+  ];
+}
+
+List<_AutomationHotspot> _facilityAutomationHotspots() {
+  const rows = [
+    [
+      'Hotel / Lodge - Room Lighting / AC',
+      'Hotel / Lodge - Smart Door Access',
+      'Hotel / Lodge - Lobby Lighting',
+      'Hotel / Lodge - Water Pump Automation',
+      'Hotel / Lodge - Corridor Motion Lighting',
+      'Hotel / Lodge - Guest Room Energy Saving',
+      'Hotel / Lodge - Fire / Smoke Safety',
+    ],
+    [
+      'School / College - Classroom Lighting Schedules',
+      'School / College - Lab Gas / Fire Safety',
+      'School / College - Attendance / Access Control',
+      'School / College - Corridor Lighting',
+      'School / College - Water Pump Automation',
+      'School / College - Security Monitoring',
+      'School / College - Energy Monitoring',
+    ],
+    [
+      'Warehouse / Godown - Loading Area Lighting',
+      'Warehouse / Godown - Stock Room Access Control',
+      'Warehouse / Godown - Fire / Smoke Safety',
+      'Warehouse / Godown - After-Hours Motion Alerts',
+      'Warehouse / Godown - Shutter / Door Monitoring',
+      'Warehouse / Godown - Energy Monitoring',
+      'Warehouse / Godown - Ventilation Control',
+    ],
+    [
+      'Gym / Fitness Center - AC Scheduling',
+      'Gym / Fitness Center - Access Control',
+      'Gym / Fitness Center - Equipment Power Control',
+      'Gym / Fitness Center - Lighting Scenes',
+      'Gym / Fitness Center - Music / Display Control',
+      'Gym / Fitness Center - Locker Room Monitoring',
+      'Gym / Fitness Center - Energy Monitoring',
+    ],
+    [
+      'Salon / Spa - Lighting Scenes',
+      'Salon / Spa - AC Scheduling',
+      'Salon / Spa - Water Heater Control',
+      'Salon / Spa - Waiting Area Comfort',
+      'Salon / Spa - Staff Room Access',
+      'Salon / Spa - Security Monitoring',
+      'Salon / Spa - Fire / Smoke Safety',
+    ],
+    [
+      'Bank / Finance Office - Strong Access Control',
+      'Bank / Finance Office - Cash / Server Room Monitoring',
+      'Bank / Finance Office - UPS / Server Power Monitoring',
+      'Bank / Finance Office - Fire / Smoke Safety',
+      'Bank / Finance Office - After-Hours Security',
+      'Bank / Finance Office - AC Scheduling',
+      'Bank / Finance Office - Energy Monitoring',
+    ],
+    [
+      'Pharmacy / Medical Store - Medicine / Vaccine Fridge Monitoring',
+      'Pharmacy / Medical Store - Power Backup Alerts',
+      'Pharmacy / Medical Store - Security Monitoring',
+      'Pharmacy / Medical Store - Lighting Control',
+      'Pharmacy / Medical Store - AC Scheduling',
+      'Pharmacy / Medical Store - Fire / Smoke Safety',
+      'Pharmacy / Medical Store - Restricted Storage Access',
+    ],
+    [
+      'Supermarket / Grocery - Cold Storage Temperature Monitoring',
+      'Supermarket / Grocery - Display Lighting',
+      'Supermarket / Grocery - Billing Counter Power Control',
+      'Supermarket / Grocery - AC Scheduling',
+      'Supermarket / Grocery - Energy Monitoring',
+      'Supermarket / Grocery - Security Monitoring',
+      'Supermarket / Grocery - Fire / Smoke Safety',
+    ],
+    [
+      'Factory / Small Workshop - Machine Power Monitoring',
+      'Factory / Small Workshop - Exhaust / Ventilation Control',
+      'Factory / Small Workshop - Worker Safety Alerts',
+      'Factory / Small Workshop - Fire / Smoke Safety',
+      'Factory / Small Workshop - Restricted Area Access',
+      'Factory / Small Workshop - Energy Monitoring',
+      'Factory / Small Workshop - Loading Area Lighting',
+    ],
+    [
+      'Co-working Space - Meeting Room Automation',
+      'Co-working Space - Access Control',
+      'Co-working Space - AC Scheduling',
+      'Co-working Space - Occupancy-Based Lighting',
+      'Co-working Space - Visitor Access',
+      'Co-working Space - Energy Monitoring',
+      'Co-working Space - Pantry Safety Alerts',
+    ],
+    [
+      'Community Hall / Marriage Hall - Stage Lighting Scenes',
+      'Community Hall / Marriage Hall - Hall AC Scheduling',
+      'Community Hall / Marriage Hall - Kitchen Gas / Fire Safety',
+      'Community Hall / Marriage Hall - Water Pump Automation',
+      'Community Hall / Marriage Hall - Outdoor / Signboard Lighting',
+      'Community Hall / Marriage Hall - Energy Monitoring',
+      'Community Hall / Marriage Hall - Security Monitoring',
+    ],
+    [
+      'Temple / Church / Prayer Hall - Prayer Hall Lighting Schedules',
+      'Temple / Church / Prayer Hall - Sound System Control',
+      'Temple / Church / Prayer Hall - Donation Box Area Monitoring',
+      'Temple / Church / Prayer Hall - Outdoor / Pathway Lighting',
+      'Temple / Church / Prayer Hall - Security Monitoring',
+      'Temple / Church / Prayer Hall - Fire / Smoke Safety',
+    ],
+    [
+      'Petrol Pump / EV Charging Point - Safety Gas / Fire Alerts',
+      'Petrol Pump / EV Charging Point - Forecourt Lighting',
+      'Petrol Pump / EV Charging Point - Equipment Monitoring',
+      'Petrol Pump / EV Charging Point - Energy / Load Monitoring',
+      'Petrol Pump / EV Charging Point - Restricted Access',
+      'Petrol Pump / EV Charging Point - Security Monitoring',
+      'Petrol Pump / EV Charging Point - Emergency Shutoff Alert',
+    ],
+    [
+      'Farmhouse / Resort - Outdoor Lighting',
+      'Farmhouse / Resort - Gate Automation',
+      'Farmhouse / Resort - Pump Automation',
+      'Farmhouse / Resort - Irrigation Control',
+      'Farmhouse / Resort - Cottage / Room Lighting and AC',
+      'Farmhouse / Resort - Security Monitoring',
+      'Farmhouse / Resort - Energy Monitoring',
+    ],
+  ];
+
+  const xPositions = [0.29, 0.395, 0.5, 0.605, 0.71, 0.815, 0.92];
+  final hotspots = <_AutomationHotspot>[];
+  for (var row = 0; row < rows.length; row++) {
+    for (var column = 0; column < rows[row].length; column++) {
+      hotspots.add(
+        _AutomationHotspot(
+          label: rows[row][column],
+          x: xPositions[column] - 0.043,
+          y: 0.151 + row * 0.071,
+          width: 0.086,
+          height: 0.044,
+        ),
+      );
+    }
+  }
+  return hotspots;
+}
+
+class _SmartHomeAutomationFallback extends StatelessWidget {
+  const _SmartHomeAutomationFallback({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      ('Rooms', 'Control lights, plugs, and daily scenes'),
+      ('Security', 'Monitor doors, alerts, and safety devices'),
+      ('Energy', 'Track usage and plan smarter schedules'),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F9FF),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: items.map((item) {
+          return Container(
+            width: 250,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: color.withValues(alpha: 0.12)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.auto_awesome_rounded, color: color, size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.$1,
+                        style: const TextStyle(
+                          color: Color(0xFF17233F),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        item.$2,
+                        style: const TextStyle(
+                          color: Color(0xFF52617F),
+                          fontSize: 12,
+                          height: 1.25,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _CarouselIconButton extends StatelessWidget {
+  const _CarouselIconButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filledTonal(
+      tooltip: icon == Icons.arrow_back_rounded ? 'Previous' : 'Next',
+      onPressed: enabled ? onTap : null,
+      icon: Icon(icon),
     );
   }
 }
@@ -2675,6 +4207,265 @@ class _DetailFeatureCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DetailContentSections extends StatelessWidget {
+  const _DetailContentSections({required this.content});
+
+  final _FeatureCategoryContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 780;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Core IoT Sections',
+                style: TextStyle(
+                  color: content.iconColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...content.contentSections.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: entry.key == content.contentSections.length - 1
+                          ? 0
+                          : 18,
+                    ),
+                    child: _DetailContentSectionCard(
+                      section: entry.value,
+                      color: content.iconColor,
+                      reverse: !compact && entry.key.isOdd,
+                    ),
+                  ),
+                ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DetailContentSectionCard extends StatelessWidget {
+  const _DetailContentSectionCard({
+    required this.section,
+    required this.color,
+    required this.reverse,
+  });
+
+  final _ContentSectionData section;
+  final Color color;
+  final bool reverse;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 780;
+        final visual = _SectionVisual(section: section, color: color);
+        final copy = _SectionCopy(section: section, color: color);
+
+        return Container(
+          padding: EdgeInsets.all(compact ? 18 : 22),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.94)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F0E2B73),
+                blurRadius: 24,
+                offset: Offset(0, 12),
+              ),
+            ],
+          ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    visual,
+                    const SizedBox(height: 18),
+                    copy,
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: reverse
+                      ? [
+                          Expanded(flex: 6, child: copy),
+                          const SizedBox(width: 24),
+                          Expanded(flex: 4, child: visual),
+                        ]
+                      : [
+                          Expanded(flex: 4, child: visual),
+                          const SizedBox(width: 24),
+                          Expanded(flex: 6, child: copy),
+                        ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _SectionVisual extends StatelessWidget {
+  const _SectionVisual({required this.section, required this.color});
+
+  final _ContentSectionData section;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 1.45,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.95),
+              const Color(0xFF102452),
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -24,
+              top: -18,
+              child: _SoftCircle(size: 110, color: Colors.white),
+            ),
+            Positioned(
+              left: -18,
+              bottom: -20,
+              child: _SoftCircle(size: 92, color: Colors.white),
+            ),
+            Center(
+              child: Container(
+                width: 92,
+                height: 92,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Icon(section.icon, color: Colors.white, size: 46),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 16,
+              child: Text(
+                section.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SoftCircle extends StatelessWidget {
+  const _SoftCircle({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
+class _SectionCopy extends StatelessWidget {
+  const _SectionCopy({required this.section, required this.color});
+
+  final _ContentSectionData section;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          section.title,
+          style: const TextStyle(
+            color: Color(0xFF17233F),
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            height: 1.12,
+            letterSpacing: 0,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          section.description,
+          style: const TextStyle(
+            color: Color(0xFF4C5873),
+            fontSize: 14.5,
+            height: 1.48,
+          ),
+        ),
+        const SizedBox(height: 15),
+        ...section.items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 9),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.check_circle_rounded, color: color, size: 18),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      color: Color(0xFF34415D),
+                      fontSize: 13.5,
+                      height: 1.36,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -2854,14 +4645,15 @@ class _DownloadSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 860;
+        final scale = (constraints.maxWidth / 1080).clamp(0.56, 1.0);
+        final gap = 14.0 * scale;
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: stacked ? 16 : 20,
-            vertical: stacked ? 14 : 14,
+            horizontal: 20 * scale,
+            vertical: 14 * scale,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28 * scale),
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -2875,87 +4667,58 @@ class _DownloadSection extends StatelessWidget {
               ),
             ],
           ),
-          child: stacked
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Download our apps',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Launch the experience on the store that fits your device.',
-                      style: TextStyle(
-                        color: Color(0xFFD9E3FF),
-                        fontSize: 13,
-                        height: 1.25,
-                      ),
-                    ),
-                    SizedBox(height: 18),
-                    Wrap(
-                      spacing: 14,
-                      runSpacing: 14,
-                      children: [
-                        _StoreBadge(
-                          icon: Icons.play_arrow_rounded,
-                          title: 'GET IT ON',
-                          label: 'Google Play',
-                        ),
-                        _StoreBadge(
-                          icon: Icons.apple_rounded,
-                          title: 'Download on the',
-                          label: 'App Store',
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : Row(
-                  children: const [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 18),
-                        child: Text(
-                          'Download our apps',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Launch the experience on the store that fits your device.',
-                        style: TextStyle(
-                          color: Color(0xFFD9E3FF),
-                          fontSize: 13,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 14),
-                    _StoreBadge(
-                      icon: Icons.play_arrow_rounded,
-                      title: 'GET IT ON',
-                      label: 'Google Play',
-                    ),
-                    SizedBox(width: 14),
-                    _StoreBadge(
-                      icon: Icons.apple_rounded,
-                      title: 'Download on the',
-                      label: 'App Store',
-                    ),
-                  ],
+          child: Row(
+            children: [
+              Expanded(
+                flex: 12,
+                child: Text(
+                  'Download our apps',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24 * scale,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0,
+                  ),
                 ),
+              ),
+              SizedBox(width: gap),
+              Expanded(
+                flex: 13,
+                child: Text(
+                  'Launch the experience on the store that fits your device.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFFD9E3FF),
+                    fontSize: 13 * scale,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              SizedBox(width: gap),
+              Flexible(
+                flex: 9,
+                child: _StoreBadge(
+                  icon: Icons.play_arrow_rounded,
+                  title: 'GET IT ON',
+                  label: 'Google Play',
+                  scale: scale,
+                ),
+              ),
+              SizedBox(width: gap),
+              Flexible(
+                flex: 9,
+                child: _StoreBadge(
+                  icon: Icons.apple_rounded,
+                  title: 'Download on the',
+                  label: 'App Store',
+                  scale: scale,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -2967,28 +4730,33 @@ class _StoreBadge extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.label,
+    required this.scale,
   });
 
   final IconData icon;
   final String title;
   final String label;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 144),
+      constraints: BoxConstraints(minWidth: 102 * scale),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        padding: EdgeInsets.symmetric(
+          horizontal: 13 * scale,
+          vertical: 9 * scale,
+        ),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18 * scale),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 22),
-            const SizedBox(width: 8),
+            Icon(icon, color: Colors.white, size: 22 * scale),
+            SizedBox(width: 8 * scale),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2998,9 +4766,9 @@ class _StoreBadge extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 10 * scale,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -3008,9 +4776,9 @@ class _StoreBadge extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 16 * scale,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -3052,51 +4820,52 @@ class _StatsSection extends StatelessWidget {
       ),
     ];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF091B44), Color(0xFF071332)],
-        ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x22081B44),
-            blurRadius: 24,
-            offset: Offset(0, 14),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = (constraints.maxWidth / 1080).clamp(0.5, 1.0);
+        final gap = 12.0 * scale;
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14 * scale,
+            vertical: 12 * scale,
           ),
-        ],
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 760
-              ? 4
-              : constraints.maxWidth >= 520
-                  ? 2
-                  : 1;
-
-          return Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26 * scale),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF091B44), Color(0xFF071332)],
+            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x22081B44),
+                blurRadius: 24,
+                offset: Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Row(
             children: items
                 .map(
-                  (item) => SizedBox(
-                    width: _gridWidth(constraints.maxWidth, columns, 12),
-                    child: item,
+                  (item) => Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: item == items.last ? 0 : gap,
+                      ),
+                      child: _StatItemView(item: item, scale: scale),
+                    ),
                   ),
                 )
                 .toList(),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-class _StatItem extends StatelessWidget {
+class _StatItem {
   const _StatItem({
     required this.icon,
     required this.value,
@@ -3106,51 +4875,62 @@ class _StatItem extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+}
+
+class _StatItemView extends StatelessWidget {
+  const _StatItemView({required this.item, required this.scale});
+
+  final _StatItem item;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: 12 * scale,
+        vertical: 10 * scale,
+      ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18 * scale),
         color: Colors.white.withValues(alpha: 0.06),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 38 * scale,
+            height: 38 * scale,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.08),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(item.icon, color: Colors.white, size: 20 * scale),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10 * scale),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    value,
-                    style: const TextStyle(
+                    item.value,
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 22 * scale,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
                 Text(
-                  label,
+                  item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFFC5D2FF),
-                    fontSize: 12,
+                  style: TextStyle(
+                    color: const Color(0xFFC5D2FF),
+                    fontSize: 12 * scale,
                   ),
                 ),
               ],
