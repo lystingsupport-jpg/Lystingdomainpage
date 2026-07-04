@@ -2471,10 +2471,6 @@ class _DetailCategoryBody extends StatelessWidget {
           const SizedBox(height: 24),
           _DetailContentSections(content: content),
         ],
-        if (content.platformGroups.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          _PlatformRoadmap(content: content),
-        ],
       ],
     );
   }
@@ -3102,7 +3098,13 @@ class _NativeAutomationTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return showFacilities
         ? _FacilityAutomationTable(color: color)
-        : _SmartHomeNativeTable(color: color);
+        : Column(
+            children: [
+              _SmartHomeNativeTable(color: color),
+              const SizedBox(height: 16),
+              _AutomationEstimatorCard(color: color),
+            ],
+          );
   }
 }
 
@@ -3111,11 +3113,15 @@ class _AutomationButtonData {
     required this.icon,
     required this.label,
     this.supporting,
+    this.detail,
+    this.sensors = const [],
   });
 
   final IconData icon;
   final String label;
   final String? supporting;
+  final String? detail;
+  final List<String> sensors;
 }
 
 class _FacilityAutomationRowData {
@@ -3198,61 +3204,152 @@ class _AutomationElevatedButton extends StatelessWidget {
   }
 }
 
-class _SmartHomeNativeTable extends StatelessWidget {
+class _SmartHomeNativeTable extends StatefulWidget {
   const _SmartHomeNativeTable({required this.color});
 
   final Color color;
+
+  @override
+  State<_SmartHomeNativeTable> createState() => _SmartHomeNativeTableState();
+}
+
+class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
+  _AutomationButtonData? _selectedItem;
 
   static const _rows = [
     _AutomationButtonData(
       icon: Icons.lightbulb_outline_rounded,
       label: 'Smart Lighting Control',
       supporting: 'Lights, dimming, schedules, scenes',
+      detail:
+          'Controls room lights with schedules, dimming, scenes, and automatic responses to movement or daylight.',
+      sensors: [
+        'Motion sensor',
+        'Ambient light / LDR sensor',
+        'Smart switch / relay module',
+        'Dimmer module',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.mode_fan_off_outlined,
       label: 'Fan & Appliance Control',
       supporting: 'Fans, AC, TV, geyser, water motor, appliances',
+      detail:
+          'Turns fans and appliances on or off from the app, remote rules, room conditions, or power usage.',
+      sensors: [
+        'Smart relay module',
+        'IR blaster for AC / TV',
+        'Temperature sensor',
+        'Current / power monitoring sensor',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.home_outlined,
       label: 'Room-Wise Automation',
       supporting: 'Hall, bedroom, kitchen, office, parking groups',
+      detail:
+          'Groups devices by room so each space can run its own lights, fans, AC, scenes, and safety rules.',
+      sensors: [
+        'Motion / occupancy sensor',
+        'Door sensor',
+        'Temperature sensor',
+        'Smart switches / relays per room',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.grid_view_rounded,
       label: 'Scenes & Modes',
       supporting: 'Morning, Night, Custom modes',
+      detail:
+          'Runs multiple devices together as one mode, like morning, night, movie, away, or custom routines.',
+      sensors: [
+        'Motion sensor',
+        'Light sensor',
+        'Time / schedule trigger',
+        'Smart switches, dimmers, curtains, and AC modules',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.calendar_month_outlined,
       label: 'Schedule-Based Automation',
       supporting: 'Time and routine based actions',
+      detail:
+          'Uses time-based routines to control lights, appliances, pumps, AC, and other devices automatically.',
+      sensors: [
+        'Timer / app scheduler',
+        'Smart relay module',
+        'Power monitoring sensor',
+        'Optional motion sensor for override',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.curtains_outlined,
       label: 'Curtain & Gate Automation',
       supporting: 'Main gate, garage door, sliding doors',
+      detail:
+          'Automates curtains, main gates, garage doors, and sliding doors with safety limits and remote control.',
+      sensors: [
+        'Motor controller',
+        'Limit switch sensor',
+        'Door / gate magnetic sensor',
+        'IR obstacle sensor',
+        'Remote / RF / Wi-Fi control module',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.device_thermostat_rounded,
       label: 'Climate Control',
       supporting: 'AC, thermostat, air purifier, ventilation',
+      detail:
+          'Maintains comfortable room conditions by controlling AC, fans, air purifiers, and ventilation.',
+      sensors: [
+        'Temperature sensor',
+        'Humidity sensor',
+        'Air quality sensor',
+        'IR blaster or thermostat module',
+        'Fan / AC relay controller',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.water_drop_outlined,
       label: 'Water Motor / Pump Automation',
       supporting: 'Tank/time/manual motor control',
+      detail:
+          'Controls water pumps using tank level, flow, pressure, time schedules, and dry-run protection.',
+      sensors: [
+        'Water level sensor',
+        'Flow sensor',
+        'Pressure sensor',
+        'Dry-run protection sensor',
+        'Smart relay / contactor module',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.directions_run_rounded,
       label: 'Motion Sensing Automation',
       supporting: 'Movement-based actions',
+      detail:
+          'Triggers lights, alerts, devices, and scenes when movement or presence is detected in a space.',
+      sensors: [
+        'PIR motion sensor',
+        'Microwave motion sensor',
+        'mmWave presence sensor',
+        'Door sensor for entry detection',
+      ],
     ),
     _AutomationButtonData(
       icon: Icons.settings_remote_outlined,
       label: 'Proximity Sensing Automation',
       supporting: 'Nearby presence-based actions',
+      detail:
+          'Detects nearby users, tags, or devices to run entry, access, lighting, and welcome automations.',
+      sensors: [
+        'Bluetooth / BLE beacon',
+        'RFID / NFC reader',
+        'Ultrasonic proximity sensor',
+        'mmWave presence sensor',
+        'Wi-Fi / mobile presence detection',
+      ],
     ),
   ];
 
@@ -3282,26 +3379,27 @@ class _SmartHomeNativeTable extends StatelessWidget {
             style: TextStyle(color: Color(0xFF52617F), fontSize: 13),
           ),
           const SizedBox(height: 18),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 980
-                  ? 5
-                  : constraints.maxWidth >= 700
-                      ? 4
-                      : 2;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: _rows
-                    .map(
-                      (row) => SizedBox(
-                        width: _gridWidth(constraints.maxWidth, columns, 12),
-                        child: _AutomationHomeButton(item: row, color: color),
-                      ),
-                    )
-                    .toList(),
-              );
-            },
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _selectedItem == null
+                ? _SmartHomeAutomationGrid(
+                    key: const ValueKey('smart-home-grid'),
+                    items: _rows,
+                    color: widget.color,
+                    onSelected: (item) {
+                      setState(() => _selectedItem = item);
+                    },
+                  )
+                : _AutomationSensorDetailPanel(
+                    key: ValueKey(_selectedItem!.label),
+                    item: _selectedItem!,
+                    color: widget.color,
+                    onBack: () {
+                      setState(() => _selectedItem = null);
+                    },
+                  ),
           ),
         ],
       ),
@@ -3309,11 +3407,58 @@ class _SmartHomeNativeTable extends StatelessWidget {
   }
 }
 
+class _SmartHomeAutomationGrid extends StatelessWidget {
+  const _SmartHomeAutomationGrid({
+    super.key,
+    required this.items,
+    required this.color,
+    required this.onSelected,
+  });
+
+  final List<_AutomationButtonData> items;
+  final Color color;
+  final ValueChanged<_AutomationButtonData> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 980
+            ? 5
+            : constraints.maxWidth >= 700
+                ? 4
+                : 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: items
+              .map(
+                (row) => SizedBox(
+                  width: _gridWidth(constraints.maxWidth, columns, 12),
+                  child: _AutomationHomeButton(
+                    item: row,
+                    color: color,
+                    onTap: () => onSelected(row),
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
 class _AutomationHomeButton extends StatelessWidget {
-  const _AutomationHomeButton({required this.item, required this.color});
+  const _AutomationHomeButton({
+    required this.item,
+    required this.color,
+    required this.onTap,
+  });
 
   final _AutomationButtonData item;
   final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -3321,9 +3466,7 @@ class _AutomationHomeButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          debugPrint('Automation selected: ${item.label}');
-        },
+        onTap: onTap,
         child: Ink(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -3376,6 +3519,1130 @@ class _AutomationHomeButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AutomationSensorDetailPanel extends StatelessWidget {
+  const _AutomationSensorDetailPanel({
+    super.key,
+    required this.item,
+    required this.color,
+    required this.onBack,
+  });
+
+  final _AutomationButtonData item;
+  final Color color;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 9),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconButton.filledTonal(
+                tooltip: 'Back to automation list',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(item.icon, color: color, size: 26),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 20,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (item.detail != null)
+            Text(
+              item.detail!,
+              style: const TextStyle(
+                color: Color(0xFF52617F),
+                fontSize: 13,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          const SizedBox(height: 18),
+          const Text(
+            'Sensors / Devices Used',
+            style: TextStyle(
+              color: Color(0xFF0C1D4A),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 760 ? 2 : 1;
+              return Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: item.sensors
+                    .map(
+                      (sensor) => SizedBox(
+                        width: _gridWidth(constraints.maxWidth, columns, 10),
+                        child: _SensorChip(label: sensor, color: color),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SensorChip extends StatelessWidget {
+  const _SensorChip({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBFF),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.sensors_rounded, color: color, size: 20),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 12.5,
+                    height: 1.2,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _sensorDescription(label),
+                  style: const TextStyle(
+                    color: Color(0xFF52617F),
+                    fontSize: 11,
+                    height: 1.25,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _sensorDescription(String sensor) {
+  return switch (sensor) {
+    'Motion sensor' => 'Detects movement in a room or area.',
+    'PIR motion sensor' =>
+      'Detects body heat movement for lighting and security actions.',
+    'Microwave motion sensor' =>
+      'Uses microwave signals to detect movement across wider coverage.',
+    'mmWave presence sensor' =>
+      'Detects fine human presence, even when someone is sitting still.',
+    'Motion / occupancy sensor' =>
+      'Detects whether a room is active or occupied.',
+    'Ambient light / LDR sensor' =>
+      'Measures surrounding light level for automatic brightness control.',
+    'Light sensor' =>
+      'Reads daylight or room brightness to trigger lighting scenes.',
+    'Smart switch / relay module' =>
+      'Switches electrical devices on or off through automation.',
+    'Smart switches / relays per room' =>
+      'Gives each room independent automated control points.',
+    'Smart switches, dimmers, curtains, and AC modules' =>
+      'Runs multiple connected devices together for one scene or mode.',
+    'Smart relay module' => 'Controls appliances and loads through app rules.',
+    'Smart relay / contactor module' =>
+      'Safely switches higher-load equipment like pumps.',
+    'Dimmer module' => 'Controls light brightness instead of only on or off.',
+    'IR blaster for AC / TV' =>
+      'Sends remote-control signals to AC, TV, and similar devices.',
+    'IR blaster or thermostat module' =>
+      'Controls AC or thermostat settings from automation rules.',
+    'Temperature sensor' => 'Measures room or device temperature.',
+    'Humidity sensor' => 'Measures moisture level in the air.',
+    'Air quality sensor' =>
+      'Checks air condition such as dust, smoke, VOC, or CO2 by model.',
+    'Current / power monitoring sensor' =>
+      'Tracks electricity use and confirms whether a device is running.',
+    'Power monitoring sensor' =>
+      'Measures energy use for schedules, reports, and safety checks.',
+    'Door sensor' => 'Detects whether a door or window is open or closed.',
+    'Door sensor for entry detection' =>
+      'Confirms entry or exit when a door opens.',
+    'Door / gate magnetic sensor' =>
+      'Detects open or closed status using a magnetic contact.',
+    'Limit switch sensor' =>
+      'Stops a motor when the curtain, gate, or door reaches its end.',
+    'IR obstacle sensor' =>
+      'Detects objects in the path of a gate, curtain, or door.',
+    'Motor controller' =>
+      'Drives and controls curtain, gate, or shutter motors.',
+    'Remote / RF / Wi-Fi control module' =>
+      'Adds remote, wireless, or app-based control to motorized devices.',
+    'Fan / AC relay controller' =>
+      'Switches fans or AC circuits based on climate rules.',
+    'Water level sensor' => 'Measures tank water level.',
+    'Flow sensor' => 'Detects water movement through a pipe.',
+    'Pressure sensor' => 'Measures pressure in a water or air line.',
+    'Dry-run protection sensor' =>
+      'Protects a pump when water supply is missing.',
+    'Timer / app scheduler' =>
+      'Runs automations at selected times or routines.',
+    'Time / schedule trigger' =>
+      'Starts scenes automatically by time, day, or routine.',
+    'Optional motion sensor for override' =>
+      'Lets movement temporarily change or cancel a scheduled action.',
+    'Bluetooth / BLE beacon' =>
+      'Detects nearby phones or tags for presence-based automation.',
+    'RFID / NFC reader' =>
+      'Identifies cards, tags, or phones for access and actions.',
+    'Ultrasonic proximity sensor' =>
+      'Measures distance to nearby objects using sound waves.',
+    'Wi-Fi / mobile presence detection' =>
+      'Uses phone network presence to trigger home or away actions.',
+    _ => 'Supports this automation with device status or trigger input.',
+  };
+}
+
+class _EstimateOptionData {
+  const _EstimateOptionData({
+    required this.id,
+    required this.icon,
+    required this.title,
+    required this.unitLabel,
+    required this.defaultRoom,
+    required this.defaultPrice,
+    required this.included,
+  });
+
+  final String id;
+  final IconData icon;
+  final String title;
+  final String unitLabel;
+  final String defaultRoom;
+  final int defaultPrice;
+  final List<String> included;
+}
+
+class _EstimateLineItem {
+  const _EstimateLineItem({
+    required this.option,
+    required this.room,
+    required this.quantity,
+    required this.unitPrice,
+  });
+
+  final _EstimateOptionData option;
+  final String room;
+  final int quantity;
+  final int unitPrice;
+
+  int get total => quantity * unitPrice;
+}
+
+class _AutomationEstimatorCard extends StatefulWidget {
+  const _AutomationEstimatorCard({required this.color});
+
+  final Color color;
+
+  @override
+  State<_AutomationEstimatorCard> createState() =>
+      _AutomationEstimatorCardState();
+}
+
+class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
+  static const _options = [
+    _EstimateOptionData(
+      id: 'lighting',
+      icon: Icons.lightbulb_outline_rounded,
+      title: 'Smart Lighting',
+      unitLabel: 'light points',
+      defaultRoom: 'Living Room',
+      defaultPrice: 1200,
+      included: [
+        'Smart switch / relay module',
+        'Motion sensor optional',
+        'Ambient light sensor optional',
+        'Mobile and web app control',
+        'Basic fitting estimate',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'fan',
+      icon: Icons.mode_fan_off_outlined,
+      title: 'Fan & Appliance',
+      unitLabel: 'appliance points',
+      defaultRoom: 'Bedroom',
+      defaultPrice: 1500,
+      included: [
+        'Smart relay module',
+        'Power monitoring optional',
+        'IR control optional for AC / TV',
+        'Mobile and web app control',
+        'Basic fitting estimate',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'room',
+      icon: Icons.home_outlined,
+      title: 'Room-Wise Automation',
+      unitLabel: 'rooms',
+      defaultRoom: 'Full Home',
+      defaultPrice: 3500,
+      included: [
+        'Room-wise device grouping',
+        'Occupancy sensor optional',
+        'Scene and schedule setup',
+        'Mobile and web app control',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'pump',
+      icon: Icons.water_drop_outlined,
+      title: 'Water Pump',
+      unitLabel: 'pumps',
+      defaultRoom: 'Utility',
+      defaultPrice: 3500,
+      included: [
+        'Water level sensor',
+        'Smart relay / contactor module',
+        'Dry-run protection optional',
+        'Manual and app control',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'climate',
+      icon: Icons.device_thermostat_rounded,
+      title: 'Climate Control',
+      unitLabel: 'AC / climate points',
+      defaultRoom: 'Bedroom',
+      defaultPrice: 2500,
+      included: [
+        'Temperature sensor',
+        'Humidity sensor optional',
+        'IR blaster or thermostat module',
+        'Mobile and web app control',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'curtain',
+      icon: Icons.curtains_outlined,
+      title: 'Curtain & Gate',
+      unitLabel: 'motor points',
+      defaultRoom: 'Lobby',
+      defaultPrice: 4500,
+      included: [
+        'Motor controller',
+        'Limit switch sensor',
+        'Obstacle sensor optional',
+        'Remote / app control',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'presence',
+      icon: Icons.sensors_rounded,
+      title: 'Motion / Proximity',
+      unitLabel: 'sensor points',
+      defaultRoom: 'Lobby',
+      defaultPrice: 900,
+      included: [
+        'PIR / mmWave sensor option',
+        'Door sensor optional',
+        'Presence-based automation rule',
+        'Mobile and web app alerts',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'app',
+      icon: Icons.devices_rounded,
+      title: 'App / Web Control',
+      unitLabel: 'setup',
+      defaultRoom: 'Project',
+      defaultPrice: 5000,
+      included: [
+        'Mobile app access',
+        'Web dashboard access',
+        'Basic user setup',
+        'Remote monitoring ready',
+      ],
+    ),
+  ];
+
+  static final Map<String, int> _savedPrices = {
+    for (final option in _options) option.id: option.defaultPrice,
+  };
+
+  final List<_EstimateLineItem> _items = [];
+  final _roomController = TextEditingController();
+  final _quantityController = TextEditingController(text: '1');
+  final _unitPriceController = TextEditingController();
+  _EstimateOptionData _selectedOption = _options.first;
+  bool _showInternalPricing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyOption(_selectedOption);
+  }
+
+  @override
+  void dispose() {
+    _roomController.dispose();
+    _quantityController.dispose();
+    _unitPriceController.dispose();
+    super.dispose();
+  }
+
+  void _applyOption(_EstimateOptionData option) {
+    _selectedOption = option;
+    _roomController.text = option.defaultRoom;
+    _quantityController.text = '1';
+    _unitPriceController.text =
+        '${_savedPrices[option.id] ?? option.defaultPrice}';
+  }
+
+  int get _grandTotal => _items.fold(0, (total, item) => total + item.total);
+
+  void _addEstimateItem() {
+    final quantity = int.tryParse(_quantityController.text) ?? 0;
+    final unitPrice = int.tryParse(_unitPriceController.text) ?? 0;
+    final room = _roomController.text.trim().isEmpty
+        ? _selectedOption.defaultRoom
+        : _roomController.text.trim();
+    if (quantity <= 0 || unitPrice <= 0) return;
+
+    setState(() {
+      _items.add(
+        _EstimateLineItem(
+          option: _selectedOption,
+          room: room,
+          quantity: quantity,
+          unitPrice: unitPrice,
+        ),
+      );
+    });
+  }
+
+  Future<void> _requestInternalAccess() async {
+    final controller = TextEditingController();
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Internal pricing access'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Passcode',
+              hintText: 'Enter passcode',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(controller.text == '1111'),
+              child: const Text('Unlock'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (!mounted) return;
+    if (accepted == true) {
+      setState(() => _showInternalPricing = true);
+    } else if (accepted == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid passcode')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      child: _showInternalPricing
+          ? _InternalPricingPanel(
+              key: const ValueKey('internal-pricing'),
+              color: widget.color,
+              options: _options,
+              prices: _savedPrices,
+              onSave: (prices) {
+                setState(() {
+                  _savedPrices
+                    ..clear()
+                    ..addAll(prices);
+                  _unitPriceController.text =
+                      '${_savedPrices[_selectedOption.id] ?? _selectedOption.defaultPrice}';
+                  _showInternalPricing = false;
+                });
+              },
+              onBack: () => setState(() => _showInternalPricing = false),
+            )
+          : _EstimatorCustomerPanel(
+              key: const ValueKey('customer-estimator'),
+              color: widget.color,
+              options: _options,
+              selectedOption: _selectedOption,
+              roomController: _roomController,
+              quantityController: _quantityController,
+              unitPriceController: _unitPriceController,
+              items: _items,
+              grandTotal: _grandTotal,
+              onOptionSelected: (option) {
+                setState(() => _applyOption(option));
+              },
+              onAdd: _addEstimateItem,
+              onRemove: (index) {
+                setState(() => _items.removeAt(index));
+              },
+              onInternalAccess: _requestInternalAccess,
+            ),
+    );
+  }
+}
+
+class _EstimatorCustomerPanel extends StatelessWidget {
+  const _EstimatorCustomerPanel({
+    super.key,
+    required this.color,
+    required this.options,
+    required this.selectedOption,
+    required this.roomController,
+    required this.quantityController,
+    required this.unitPriceController,
+    required this.items,
+    required this.grandTotal,
+    required this.onOptionSelected,
+    required this.onAdd,
+    required this.onRemove,
+    required this.onInternalAccess,
+  });
+
+  final Color color;
+  final List<_EstimateOptionData> options;
+  final _EstimateOptionData selectedOption;
+  final TextEditingController roomController;
+  final TextEditingController quantityController;
+  final TextEditingController unitPriceController;
+  final List<_EstimateLineItem> items;
+  final int grandTotal;
+  final ValueChanged<_EstimateOptionData> onOptionSelected;
+  final VoidCallback onAdd;
+  final ValueChanged<int> onRemove;
+  final VoidCallback onInternalAccess;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBFF),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDCE8FF)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Smart Automation Estimate',
+                      style: TextStyle(
+                        color: Color(0xFF0C1D4A),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Build a rough estimate by room, device count, and automation type.',
+                      style: TextStyle(
+                        color: Color(0xFF52617F),
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Opacity(
+                opacity: 0.16,
+                child: IconButton(
+                  tooltip: 'Internal pricing',
+                  onPressed: onInternalAccess,
+                  icon: const Icon(Icons.admin_panel_settings_rounded),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 880;
+              final leftWidth = wide
+                  ? (constraints.maxWidth - 16) * 0.55
+                  : constraints.maxWidth;
+              final rightWidth = wide
+                  ? (constraints.maxWidth - 16) * 0.45
+                  : constraints.maxWidth;
+              final children = [
+                SizedBox(
+                  width: leftWidth,
+                  child: _EstimatorBuilderPanel(
+                    color: color,
+                    options: options,
+                    selectedOption: selectedOption,
+                    roomController: roomController,
+                    quantityController: quantityController,
+                    unitPriceController: unitPriceController,
+                    onOptionSelected: onOptionSelected,
+                    onAdd: onAdd,
+                  ),
+                ),
+                SizedBox(
+                  width: rightWidth,
+                  child: _EstimateSummaryPanel(
+                    color: color,
+                    items: items,
+                    grandTotal: grandTotal,
+                    onRemove: onRemove,
+                  ),
+                ),
+              ];
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: children,
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Approximate estimate only. Final pricing may vary by wiring, brand, device model, and site condition.',
+            style: TextStyle(
+              color: Color(0xFF6B7896),
+              fontSize: 11.5,
+              height: 1.3,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EstimatorBuilderPanel extends StatelessWidget {
+  const _EstimatorBuilderPanel({
+    required this.color,
+    required this.options,
+    required this.selectedOption,
+    required this.roomController,
+    required this.quantityController,
+    required this.unitPriceController,
+    required this.onOptionSelected,
+    required this.onAdd,
+  });
+
+  final Color color;
+  final List<_EstimateOptionData> options;
+  final _EstimateOptionData selectedOption;
+  final TextEditingController roomController;
+  final TextEditingController quantityController;
+  final TextEditingController unitPriceController;
+  final ValueChanged<_EstimateOptionData> onOptionSelected;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: options.map((option) {
+            final selected = option.id == selectedOption.id;
+            return SizedBox(
+              width: 142,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => onOptionSelected(option),
+                child: Ink(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        selected ? color.withValues(alpha: 0.1) : Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: selected
+                          ? color.withValues(alpha: 0.35)
+                          : color.withValues(alpha: 0.1),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: selected ? 0.14 : 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(option.icon, color: color, size: 22),
+                      const SizedBox(height: 8),
+                      Text(
+                        option.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: const Color(0xFF0C1D4A),
+                          fontSize: 12,
+                          height: 1.15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.1)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                selectedOption.title,
+                style: const TextStyle(
+                  color: Color(0xFF0C1D4A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  SizedBox(
+                    width: 190,
+                    child: TextField(
+                      controller: roomController,
+                      decoration: const InputDecoration(
+                        labelText: 'Room / Area',
+                        hintText: 'Living Room',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 150,
+                    child: TextField(
+                      controller: quantityController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText: 'Quantity',
+                        hintText: selectedOption.unitLabel,
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 160,
+                    child: TextField(
+                      controller: unitPriceController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'Unit price',
+                        prefixText: 'Rs ',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Included / Suggested',
+                style: TextStyle(
+                  color: Color(0xFF0C1D4A),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...selectedOption.included.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: color, size: 16),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: const TextStyle(
+                            color: Color(0xFF52617F),
+                            fontSize: 12,
+                            height: 1.25,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Add to Estimate'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EstimateSummaryPanel extends StatelessWidget {
+  const _EstimateSummaryPanel({
+    required this.color,
+    required this.items,
+    required this.grandTotal,
+    required this.onRemove,
+  });
+
+  final Color color;
+  final List<_EstimateLineItem> items;
+  final int grandTotal;
+  final ValueChanged<int> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Estimate Summary',
+            style: TextStyle(
+              color: Color(0xFF0C1D4A),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (items.isEmpty)
+            const Text(
+              'Add automation items to build the estimate.',
+              style: TextStyle(
+                color: Color(0xFF52617F),
+                fontSize: 12.5,
+                height: 1.3,
+              ),
+            )
+          else
+            ...items.asMap().entries.map((entry) {
+              final item = entry.value;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FBFF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withValues(alpha: 0.08)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(item.option.icon, color: color, size: 20),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${item.room} - ${item.option.title}',
+                            style: const TextStyle(
+                              color: Color(0xFF0C1D4A),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '${item.quantity} x Rs ${item.unitPrice} = Rs ${item.total}',
+                            style: const TextStyle(
+                              color: Color(0xFF52617F),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Remove',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => onRemove(entry.key),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          const Divider(height: 22),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Grand Total',
+                  style: TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              Text(
+                'Rs $grandTotal',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InternalPricingPanel extends StatefulWidget {
+  const _InternalPricingPanel({
+    super.key,
+    required this.color,
+    required this.options,
+    required this.prices,
+    required this.onSave,
+    required this.onBack,
+  });
+
+  final Color color;
+  final List<_EstimateOptionData> options;
+  final Map<String, int> prices;
+  final ValueChanged<Map<String, int>> onSave;
+  final VoidCallback onBack;
+
+  @override
+  State<_InternalPricingPanel> createState() => _InternalPricingPanelState();
+}
+
+class _InternalPricingPanelState extends State<_InternalPricingPanel> {
+  late final Map<String, TextEditingController> _controllers;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      for (final option in widget.options)
+        option.id: TextEditingController(
+          text: '${widget.prices[option.id] ?? option.defaultPrice}',
+        ),
+    };
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _save() {
+    widget.onSave({
+      for (final option in widget.options)
+        option.id: int.tryParse(_controllers[option.id]?.text ?? '') ??
+            option.defaultPrice,
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: widget.color.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconButton.filledTonal(
+                tooltip: 'Back to estimator',
+                onPressed: widget.onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Internal Price Setup',
+                  style: TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: _save,
+                icon: const Icon(Icons.save_rounded),
+                label: const Text('Save'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Update default unit prices used by the customer estimate builder.',
+            style: TextStyle(
+              color: Color(0xFF52617F),
+              fontSize: 12.5,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 760 ? 2 : 1;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: widget.options.map((option) {
+                  return SizedBox(
+                    width: _gridWidth(constraints.maxWidth, columns, 12),
+                    child: TextField(
+                      controller: _controllers[option.id],
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(option.icon, color: widget.color),
+                        labelText: option.title,
+                        prefixText: 'Rs ',
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -4468,174 +5735,6 @@ class _SectionCopy extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _PlatformRoadmap extends StatelessWidget {
-  const _PlatformRoadmap({required this.content});
-
-  final _FeatureCategoryContent content;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 760;
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(compact ? 20 : 26),
-          decoration: BoxDecoration(
-            color: const Color(0xFF102452),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: content.iconColor.withValues(alpha: 0.16),
-                blurRadius: 30,
-                offset: const Offset(0, 16),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.account_tree_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'IoT Platform Plan',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'A high-level build path for current launch and future modules.',
-                          style: TextStyle(
-                            color: Color(0xFFD8E3FF),
-                            fontSize: 13,
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 22),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: content.platformGroups
-                    .map(
-                      (group) => SizedBox(
-                        width: compact
-                            ? constraints.maxWidth
-                            : _gridWidth(constraints.maxWidth, 2, 16),
-                        child: _PlatformRoadmapCard(
-                          group: group,
-                          color: content.iconColor,
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _PlatformRoadmapCard extends StatelessWidget {
-  const _PlatformRoadmapCard({required this.group, required this.color});
-
-  final _FeatureGroupData group;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            group.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0,
-            ),
-          ),
-          const SizedBox(height: 14),
-          ...group.items.asMap().entries.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 11),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 23,
-                        height: 23,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${entry.key + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          entry.value,
-                          style: const TextStyle(
-                            color: Color(0xFFEAF0FF),
-                            fontSize: 13.5,
-                            height: 1.38,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-        ],
-      ),
     );
   }
 }
