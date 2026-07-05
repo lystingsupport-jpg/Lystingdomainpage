@@ -189,45 +189,30 @@ class _LandingPageState extends State<LandingPage> {
         child: Stack(
           children: [
             SafeArea(
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: _responsivePagePadding(context, vertical: 16),
-                      child: const _TopNavigation(),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: _responsivePagePadding(context, vertical: 0),
-                      child: _SectionShell(
-                        child: Column(
-                          children: [
-                            _HeroSection(design: _design),
-                            const SizedBox(height: AppDesign.sectionGap),
-                            _SolutionsSection(
-                              design: _design,
-                              onCategorySelected: (category) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => FeatureDetailScreen(
-                                      category: category,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            SizedBox(height: _bottomCardsTopGap(context)),
-                            const _DownloadSection(),
-                            const SizedBox(height: AppDesign.sectionGap),
-                            const _StatsSection(),
-                            const SizedBox(height: AppDesign.pageBottomGap),
-                          ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ClipRect(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        child: _LandingContent(
+                          design: _design,
+                          onCategorySelected: (category) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => FeatureDetailScreen(
+                                  category: category,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
             _DesignPanel(
@@ -250,6 +235,48 @@ class _LandingPageState extends State<LandingPage> {
   }
 }
 
+class _LandingContent extends StatelessWidget {
+  const _LandingContent({
+    required this.design,
+    required this.onCategorySelected,
+  });
+
+  final _DesignTuning design;
+  final ValueChanged<FeatureCategory> onCategorySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: _responsivePagePadding(context, vertical: 16),
+          child: const _TopNavigation(),
+        ),
+        Padding(
+          padding: _responsivePagePadding(context, vertical: 0),
+          child: _SectionShell(
+            child: Column(
+              children: [
+                _HeroSection(design: design),
+                const SizedBox(height: AppDesign.sectionGap),
+                _SolutionsSection(
+                  design: design,
+                  onCategorySelected: onCategorySelected,
+                ),
+                SizedBox(height: _bottomCardsTopGap(context)),
+                const _DownloadSection(),
+                SizedBox(height: _downloadStatsGap(context)),
+                const _StatsSection(),
+                const SizedBox(height: AppDesign.pageBottomGap),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 EdgeInsets _responsivePagePadding(
   BuildContext context, {
   required double vertical,
@@ -266,12 +293,23 @@ EdgeInsets _responsivePagePadding(
 double _bottomCardsTopGap(BuildContext context) {
   final width = MediaQuery.sizeOf(context).width;
   if (width < 640) {
-    return 56;
+    return 10;
   }
   if (width < 900) {
-    return 110;
+    return 12;
   }
-  return 220;
+  return 16;
+}
+
+double _downloadStatsGap(BuildContext context) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width < 640) {
+    return 8;
+  }
+  if (width < 900) {
+    return 10;
+  }
+  return 12;
 }
 
 enum FeatureCategory { iot, ecommerce, b2b }
@@ -392,81 +430,21 @@ const _featureCategoryContent = {
     category: FeatureCategory.ecommerce,
     icon: Icons.shopping_cart_outlined,
     iconColor: Color(0xFFFF7A00),
-    title: 'E-commerce Powerful Features',
+    title: 'Page Under Construction',
     kicker: 'Lysting App',
-    summary:
-        'A local commerce experience for food, products, services, digital showrooms, bulk uploads, and sales visibility.',
-    heroPoints: [
-      'Food, product, and service listings',
-      'Digital showroom gallery experience',
-      'Agent analytics for products and sales',
-    ],
-    featureGroups: [
-      _FeatureGroupData(
-        title: 'Selling Tools',
-        items: [
-          'Store-based product sales',
-          'Bulk product upload for agents',
-          'A to Z service listing support',
-        ],
-      ),
-      _FeatureGroupData(
-        title: 'Shopping Experience',
-        items: [
-          'Gallery-first browsing',
-          'Product reviews and trust signals',
-          'Category discovery for local customers',
-        ],
-      ),
-      _FeatureGroupData(
-        title: 'Business Insights',
-        items: [
-          'Product and sales performance view',
-          'Customer review tracking',
-          'Agent-friendly catalog management',
-        ],
-      ),
-    ],
+    summary: 'This page is under construction.',
+    heroPoints: [],
+    featureGroups: [],
   ),
   FeatureCategory.b2b: _FeatureCategoryContent(
     category: FeatureCategory.b2b,
     icon: Icons.groups_2_outlined,
     iconColor: Color(0xFF265BFF),
-    title: 'Pure B2B Powerful Features',
+    title: 'Page Under Construction',
     kicker: 'Lysmart',
-    summary:
-        'A wholesale-first B2B platform for online catalogs, agent search, digital showrooms, and supplier discovery.',
-    heroPoints: [
-      'Pure B2B purpose-built workflows',
-      'Wholesaler online catalog showcase',
-      'Product-based agent search',
-    ],
-    featureGroups: [
-      _FeatureGroupData(
-        title: 'Wholesale Catalogs',
-        items: [
-          'Digital showroom for wholesalers',
-          'Bulk catalog presentation',
-          'Easy product discovery by category',
-        ],
-      ),
-      _FeatureGroupData(
-        title: 'Agent Network',
-        items: [
-          'Product-based agent search',
-          'Supplier and buyer connection flow',
-          'AI-assisted A to Z service support',
-        ],
-      ),
-      _FeatureGroupData(
-        title: 'B2B Operations',
-        items: [
-          'Simple business-first interface',
-          'Repeat ordering support path',
-          'Focused wholesale marketplace structure',
-        ],
-      ),
-    ],
+    summary: 'This page is under construction.',
+    heroPoints: [],
+    featureGroups: [],
   ),
 };
 
@@ -507,15 +485,17 @@ class _DesignPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 640;
+
     return Positioned(
-      right: 16,
-      bottom: 16,
+      right: compact ? 10 : 16,
+      bottom: compact ? 8 : 16,
       child: SafeArea(
         child: Material(
           color: Colors.transparent,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            width: expanded ? 320 : 132,
+            width: expanded ? (compact ? 300 : 320) : (compact ? 48 : 132),
             constraints: BoxConstraints(
               maxHeight: MediaQuery.sizeOf(context).height - 48,
             ),
@@ -531,32 +511,38 @@ class _DesignPanel extends StatelessWidget {
                 ),
               ],
             ),
-            child: expanded ? _expandedPanel(context) : _collapsedButton(),
+            child:
+                expanded ? _expandedPanel(context) : _collapsedButton(compact),
           ),
         ),
       ),
     );
   }
 
-  Widget _collapsedButton() {
+  Widget _collapsedButton(bool compact) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onToggle,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 12 : 14,
+          vertical: compact ? 10 : 12,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.tune_rounded, color: Color(0xFF1D63FF), size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Design',
-              style: TextStyle(
-                color: Color(0xFF17233F),
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
+            const Icon(Icons.tune_rounded, color: Color(0xFF1D63FF), size: 20),
+            if (!compact) ...[
+              const SizedBox(width: 8),
+              const Text(
+                'Design',
+                style: TextStyle(
+                  color: Color(0xFF17233F),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -1581,7 +1567,7 @@ class _SolutionsSection extends StatelessWidget {
         category: FeatureCategory.iot,
         icon: Icons.wifi_rounded,
         iconBg: const Color(0xFF1C5EFF),
-        title: 'Lysting Smart IoT',
+        title: 'LysTing Smart IoT',
         subtitle: 'Smart automation for connected spaces',
         bullets: [
           'Plug & Play Devices',
@@ -1625,12 +1611,7 @@ class _SolutionsSection extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns =
-            constraints.maxWidth >= AppDesign.solutionsThreeColumnBreakpoint
-                ? 3
-                : constraints.maxWidth >= AppDesign.solutionsTwoColumnBreakpoint
-                    ? 2
-                    : 1;
+        const columns = 3;
 
         return Wrap(
           alignment: WrapAlignment.center,
@@ -1698,229 +1679,257 @@ class _SolutionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: design.solutionPhoneMaxWidth),
-        child: AspectRatio(
-          aspectRatio: AppDesign.solutionPhoneAspectRatio,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(
-                design.solutionPhoneOuterRadius,
-              ),
-              onTap: onTap,
-              child: Ink(
-                padding: AppDesign.solutionPhonePadding,
-                decoration: BoxDecoration(
-                  color: design.solutionPhoneShellColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = (constraints.maxWidth / design.solutionPhoneMaxWidth)
+            .clamp(0.5, 1.0);
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: design.solutionPhoneMaxWidth),
+            child: AspectRatio(
+              aspectRatio: AppDesign.solutionPhoneAspectRatio,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
                   borderRadius: BorderRadius.circular(
-                    design.solutionPhoneOuterRadius,
+                    design.solutionPhoneOuterRadius * scale,
                   ),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: design.solutionPhoneBorderWidth,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: data.accent.withValues(alpha: 0.18),
-                      blurRadius: 30,
-                      offset: const Offset(0, 18),
-                    ),
-                    const BoxShadow(
-                      color: Color(0x120E2B73),
-                      blurRadius: 20,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    design.solutionPhoneInnerRadius,
-                  ),
-                  child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0xFFFFFFFF), Color(0xFFF4F8FF)],
+                  onTap: onTap,
+                  child: Ink(
+                    padding: AppDesign.solutionPhonePadding * scale,
+                    decoration: BoxDecoration(
+                      color: design.solutionPhoneShellColor,
+                      borderRadius: BorderRadius.circular(
+                        design.solutionPhoneOuterRadius * scale,
                       ),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: design.solutionPhoneBorderWidth * scale,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: data.accent.withValues(alpha: 0.18),
+                          blurRadius: 30 * scale,
+                          offset: Offset(0, 18 * scale),
+                        ),
+                        BoxShadow(
+                          color: const Color(0x120E2B73),
+                          blurRadius: 20 * scale,
+                          offset: Offset(0, 8 * scale),
+                        ),
+                      ],
                     ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            height: AppDesign.solutionPhoneStatusHeight,
-                            decoration: BoxDecoration(
-                              color: data.iconBg.withValues(
-                                alpha: design.solutionPhoneScreenTopAlpha,
-                              ),
-                            ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        design.solutionPhoneInnerRadius * scale,
+                      ),
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFFFFFFFF), Color(0xFFF4F8FF)],
                           ),
                         ),
-                        Positioned(
-                          top: 8,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Container(
-                              width: AppDesign.solutionPhoneSpeakerWidth,
-                              height: AppDesign.solutionPhoneSpeakerHeight,
-                              decoration: BoxDecoration(
-                                color:
-                                    design.solutionPhoneShellColor.withValues(
-                                  alpha: 0.18,
-                                ),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: AppDesign.solutionPhoneContentPadding,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: design.solutionIconSize,
-                                height: design.solutionIconSize,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                height:
+                                    AppDesign.solutionPhoneStatusHeight * scale,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      data.iconBg,
-                                      data.iconBg.withValues(alpha: 0.72),
-                                    ],
+                                  color: data.iconBg.withValues(
+                                    alpha: design.solutionPhoneScreenTopAlpha,
                                   ),
-                                  borderRadius: BorderRadius.circular(
-                                    design.solutionIconRadius,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 8 * scale,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  width: AppDesign.solutionPhoneSpeakerWidth *
+                                      scale,
+                                  height: AppDesign.solutionPhoneSpeakerHeight *
+                                      scale,
+                                  decoration: BoxDecoration(
+                                    color: design.solutionPhoneShellColor
+                                        .withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    borderRadius: BorderRadius.circular(999),
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          data.iconBg.withValues(alpha: 0.24),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 8),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  AppDesign.solutionPhoneContentPadding * scale,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: design.solutionIconSize * scale,
+                                    height: design.solutionIconSize * scale,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          data.iconBg,
+                                          data.iconBg.withValues(alpha: 0.72),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        design.solutionIconRadius * scale,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: data.iconBg
+                                              .withValues(alpha: 0.24),
+                                          blurRadius: 18 * scale,
+                                          offset: Offset(0, 8 * scale),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      data.icon,
+                                      color: Colors.white,
+                                      size: 23 * scale,
+                                    ),
+                                  ),
+                                  SizedBox(height: 12 * scale),
+                                  Text(
+                                    data.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: design.solutionTitleColor,
+                                      fontSize: data.title.length > 12
+                                          ? (design.solutionTitleSize - 2) *
+                                              scale
+                                          : design.solutionTitleSize * scale,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.16,
+                                    ),
+                                  ),
+                                  if (data.subtitle != null) ...[
+                                    SizedBox(height: 4 * scale),
+                                    Text(
+                                      data.subtitle!,
+                                      maxLines: scale < 0.7 ? 2 : 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: data.accent,
+                                        fontSize: data.subtitle!.length > 18
+                                            ? (design.solutionSubtitleSize -
+                                                    2) *
+                                                scale
+                                            : design.solutionSubtitleSize *
+                                                scale,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.22,
+                                      ),
                                     ),
                                   ],
-                                ),
-                                child: Icon(
-                                  data.icon,
-                                  color: Colors.white,
-                                  size: 23,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                data.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: design.solutionTitleColor,
-                                  fontSize: data.title.length > 12
-                                      ? design.solutionTitleSize - 2
-                                      : design.solutionTitleSize,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.16,
-                                ),
-                              ),
-                              if (data.subtitle != null) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  data.subtitle!,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: data.accent,
-                                    fontSize: data.subtitle!.length > 18
-                                        ? design.solutionSubtitleSize - 2
-                                        : design.solutionSubtitleSize,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.22,
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 7),
-                              ...data.bullets.map(
-                                (bullet) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 5),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        margin: const EdgeInsets.only(top: 6),
-                                        decoration: BoxDecoration(
-                                          color: data.accent,
-                                          shape: BoxShape.circle,
-                                        ),
+                                  SizedBox(height: 7 * scale),
+                                  ...data.bullets.map(
+                                    (bullet) => Padding(
+                                      padding:
+                                          EdgeInsets.only(bottom: 5 * scale),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            width: 6 * scale,
+                                            height: 6 * scale,
+                                            margin:
+                                                EdgeInsets.only(top: 6 * scale),
+                                            decoration: BoxDecoration(
+                                              color: data.accent,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8 * scale),
+                                          Expanded(
+                                            child: Text(
+                                              bullet,
+                                              maxLines: scale < 0.7 ? 1 : 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color:
+                                                    design.solutionBulletColor,
+                                                fontSize:
+                                                    design.solutionBulletSize *
+                                                        scale,
+                                                height: 1.25,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 8),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Row(
+                                    children: [
                                       Expanded(
                                         child: Text(
-                                          bullet,
+                                          'Learn More',
                                           style: TextStyle(
-                                            color: design.solutionBulletColor,
-                                            fontSize: design.solutionBulletSize,
-                                            height: 1.25,
+                                            color: data.accent,
+                                            fontSize:
+                                                design.solutionLearnMoreSize *
+                                                    scale,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                       ),
+                                      Container(
+                                        width: design.solutionArrowButtonSize *
+                                            scale,
+                                        height: design.solutionArrowButtonSize *
+                                            scale,
+                                        decoration: BoxDecoration(
+                                          color: data.accent.withValues(
+                                            alpha: design
+                                                .solutionArrowButtonBgAlpha,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            design.solutionArrowButtonRadius *
+                                                scale,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: data.accent,
+                                          size: design.solutionArrowIconSize *
+                                              scale,
+                                        ),
+                                      ),
                                     ],
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Learn More',
-                                      style: TextStyle(
-                                        color: data.accent,
-                                        fontSize: design.solutionLearnMoreSize,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: design.solutionArrowButtonSize,
-                                    height: design.solutionArrowButtonSize,
-                                    decoration: BoxDecoration(
-                                      color: data.accent.withValues(
-                                        alpha:
-                                            design.solutionArrowButtonBgAlpha,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        design.solutionArrowButtonRadius,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: data.accent,
-                                      size: design.solutionArrowIconSize,
-                                    ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -2091,6 +2100,7 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final content = _contentFor(_selectedCategory);
+    final narrow = MediaQuery.sizeOf(context).width < 430;
 
     return Scaffold(
       body: Container(
@@ -2105,13 +2115,16 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
           child: Column(
             children: [
               Padding(
-                padding: _responsivePagePadding(context, vertical: 16),
+                padding: _responsivePagePadding(
+                  context,
+                  vertical: narrow ? 10 : 16,
+                ),
                 child: _SectionShell(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _DetailTopBar(content: content),
-                      const SizedBox(height: 18),
+                      SizedBox(height: narrow ? 10 : 18),
                       _CategoryDock(
                         selectedCategory: _selectedCategory,
                         onSelected: (category) {
@@ -2131,7 +2144,10 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
                 child: SingleChildScrollView(
                   controller: _contentScrollController,
                   primary: false,
-                  padding: _responsivePagePadding(context, vertical: 0),
+                  padding: _responsivePagePadding(
+                    context,
+                    vertical: 0,
+                  ),
                   child: _SectionShell(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2180,6 +2196,13 @@ class _DetailTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 430;
+    final title = content.category == FeatureCategory.iot
+        ? 'LysTing Smart IoT'
+        : content.kicker;
+    final icon = content.category == FeatureCategory.iot
+        ? Icons.settings_suggest_rounded
+        : content.icon;
     return Row(
       children: [
         IconButton.filledTonal(
@@ -2187,20 +2210,20 @@ class _DetailTopBar extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: narrow ? 8 : 12),
         Container(
-          width: 42,
-          height: 42,
+          width: narrow ? 38 : 42,
+          height: narrow ? 38 : 42,
           decoration: BoxDecoration(
             color: content.iconColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(narrow ? 13 : 14),
           ),
-          child: Icon(content.icon, color: content.iconColor, size: 24),
+          child: Icon(icon, color: content.iconColor, size: narrow ? 22 : 24),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: narrow ? 10 : 12),
         Expanded(
           child: Text(
-            content.kicker,
+            title,
             style: const TextStyle(
               color: Color(0xFF17233F),
               fontSize: 18,
@@ -2233,10 +2256,19 @@ class _CategoryDock extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 620;
+        final narrow = constraints.maxWidth < 390;
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 8 : 14,
-            vertical: compact ? 8 : 10,
+            horizontal: narrow
+                ? 6
+                : compact
+                    ? 8
+                    : 14,
+            vertical: narrow
+                ? 6
+                : compact
+                    ? 8
+                    : 10,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.72),
@@ -2261,12 +2293,18 @@ class _CategoryDock extends StatelessWidget {
                       content: _contentFor(category),
                       selected: selectedCategory == category,
                       compact: compact,
+                      narrow: narrow,
                       onTap: () => onSelected(category),
                     ),
                   ),
                 ),
                 if (category != categories.last)
-                  SizedBox(width: compact ? 6 : 12),
+                  SizedBox(
+                      width: narrow
+                          ? 4
+                          : compact
+                              ? 6
+                              : 12),
               ],
             ],
           ),
@@ -2281,12 +2319,14 @@ class _DockPhoneButton extends StatelessWidget {
     required this.content,
     required this.selected,
     required this.compact,
+    required this.narrow,
     required this.onTap,
   });
 
   final _FeatureCategoryContent content;
   final bool selected;
   final bool compact;
+  final bool narrow;
   final VoidCallback onTap;
 
   @override
@@ -2307,18 +2347,42 @@ class _DockPhoneButton extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              width: compact ? 70 : 86,
+              width: narrow
+                  ? 64
+                  : compact
+                      ? 66
+                      : 86,
               padding: EdgeInsets.fromLTRB(
-                compact ? 5 : 6,
-                compact ? 6 : 7,
-                compact ? 5 : 6,
-                compact ? 5 : 6,
+                narrow
+                    ? 4
+                    : compact
+                        ? 5
+                        : 6,
+                narrow
+                    ? 5
+                    : compact
+                        ? 6
+                        : 7,
+                narrow
+                    ? 4
+                    : compact
+                        ? 5
+                        : 6,
+                narrow
+                    ? 4
+                    : compact
+                        ? 5
+                        : 6,
               ),
               decoration: BoxDecoration(
                 color: selected
                     ? content.iconColor.withValues(alpha: 0.92)
                     : const Color(0xFF111827),
-                borderRadius: BorderRadius.circular(compact ? 18 : 22),
+                borderRadius: BorderRadius.circular(narrow
+                    ? 16
+                    : compact
+                        ? 18
+                        : 22),
                 border: Border.all(
                   color: selected
                       ? content.iconColor.withValues(alpha: 0.5)
@@ -2349,10 +2413,26 @@ class _DockPhoneButton extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
-                        compact ? 6 : 7,
-                        compact ? 8 : 9,
-                        compact ? 6 : 7,
-                        compact ? 6 : 7,
+                        narrow
+                            ? 5
+                            : compact
+                                ? 6
+                                : 7,
+                        narrow
+                            ? 7
+                            : compact
+                                ? 8
+                                : 9,
+                        narrow
+                            ? 5
+                            : compact
+                                ? 6
+                                : 7,
+                        narrow
+                            ? 5
+                            : compact
+                                ? 6
+                                : 7,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2360,20 +2440,37 @@ class _DockPhoneButton extends StatelessWidget {
                           Center(
                             child: Container(
                               width: compact ? 26 : 34,
-                              height: compact ? 2.5 : 3,
+                              height: narrow
+                                  ? 2.2
+                                  : compact
+                                      ? 2.5
+                                      : 3,
                               decoration: BoxDecoration(
                                 color: const Color(0xFFCBD4E8),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                             ),
                           ),
-                          SizedBox(height: compact ? 7 : 8),
+                          SizedBox(
+                              height: narrow
+                                  ? 6
+                                  : compact
+                                      ? 7
+                                      : 8),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: compact ? 20 : 24,
-                                height: compact ? 20 : 24,
+                                width: narrow
+                                    ? 18
+                                    : compact
+                                        ? 20
+                                        : 24,
+                                height: narrow
+                                    ? 18
+                                    : compact
+                                        ? 20
+                                        : 24,
                                 decoration: BoxDecoration(
                                   color: content.iconColor,
                                   borderRadius: BorderRadius.circular(9),
@@ -2390,7 +2487,11 @@ class _DockPhoneButton extends StatelessWidget {
                                 child: Icon(
                                   content.icon,
                                   color: Colors.white,
-                                  size: compact ? 12 : 14,
+                                  size: narrow
+                                      ? 11
+                                      : compact
+                                          ? 12
+                                          : 14,
                                 ),
                               ),
                               const Spacer(),
@@ -2400,7 +2501,11 @@ class _DockPhoneButton extends StatelessWidget {
                                 child: Icon(
                                   Icons.check_circle_rounded,
                                   color: content.iconColor,
-                                  size: compact ? 12 : 14,
+                                  size: narrow
+                                      ? 11
+                                      : compact
+                                          ? 12
+                                          : 14,
                                 ),
                               ),
                             ],
@@ -2412,20 +2517,28 @@ class _DockPhoneButton extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: const Color(0xFF17233F),
-                              fontSize: compact ? 8.5 : 9.5,
+                              fontSize: narrow
+                                  ? 7.2
+                                  : compact
+                                      ? 8.5
+                                      : 9.5,
                               fontWeight: FontWeight.w900,
                               height: 1.08,
                               letterSpacing: 0,
                             ),
                           ),
-                          SizedBox(height: compact ? 2 : 2),
+                          SizedBox(height: narrow ? 1 : 2),
                           Text(
                             _dockSubtitle(content.category),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: content.iconColor,
-                              fontSize: compact ? 7.5 : 8.5,
+                              fontSize: narrow
+                                  ? 6.8
+                                  : compact
+                                      ? 7.5
+                                      : 8.5,
                               fontWeight: FontWeight.w800,
                               height: 1.1,
                             ),
@@ -2459,10 +2572,16 @@ class _DetailCategoryBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 430;
+    if (content.category == FeatureCategory.ecommerce ||
+        content.category == FeatureCategory.b2b) {
+      return _UnderConstructionPanel(color: content.iconColor);
+    }
+
     return Column(
       children: [
         _DetailHero(content: content),
-        const SizedBox(height: 14),
+        SizedBox(height: narrow ? 8 : 14),
         if (content.category == FeatureCategory.iot)
           _AutomationCarousel(color: content.iconColor)
         else
@@ -2472,6 +2591,90 @@ class _DetailCategoryBody extends StatelessWidget {
           _DetailContentSections(content: content),
         ],
       ],
+    );
+  }
+}
+
+class _UnderConstructionPanel extends StatelessWidget {
+  const _UnderConstructionPanel({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return Container(
+          constraints: BoxConstraints(
+            minHeight: compact ? 420 : 560,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF2FF).withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 430),
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: compact ? 18 : 24,
+                  vertical: 32,
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 22 : 30,
+                  vertical: compact ? 24 : 30,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.18),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF183A72).withValues(alpha: 0.12),
+                      blurRadius: 28,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: compact ? 52 : 58,
+                      height: compact ? 52 : 58,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(
+                        Icons.construction_rounded,
+                        color: color,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Page under construction',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: const Color(0xFF17233F),
+                        fontSize: compact ? 22 : 26,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -2486,54 +2689,56 @@ class _DetailHero extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
+        final narrow = constraints.maxWidth < 390;
+        final tight = constraints.maxWidth < 430;
         final heroText = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-              decoration: BoxDecoration(
-                color: content.iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                'Powerful Features'.toUpperCase(),
-                style: TextStyle(
-                  color: content.iconColor,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.1,
-                ),
-              ),
-            ),
-            const SizedBox(height: 7),
             Text(
-              content.title,
-              style: const TextStyle(
-                color: Color(0xFF17233F),
-                fontSize: 24,
+              content.category == FeatureCategory.iot
+                  ? 'LysTing Smart IoT'
+                  : content.title,
+              style: TextStyle(
+                color: const Color(0xFF17233F),
+                fontSize: tight ? 20 : 24,
                 fontWeight: FontWeight.w900,
                 height: 1.08,
                 letterSpacing: 0,
               ),
             ),
-            const SizedBox(height: 7),
-            Text(
-              content.summary,
-              style: const TextStyle(
-                color: Color(0xFF4C5873),
-                fontSize: 12.5,
-                height: 1.32,
+            if (content.category != FeatureCategory.iot) ...[
+              SizedBox(height: tight ? 4 : 7),
+              Text(
+                content.summary,
+                maxLines: tight ? 2 : null,
+                overflow: tight ? TextOverflow.ellipsis : TextOverflow.visible,
+                style: TextStyle(
+                  color: const Color(0xFF4C5873),
+                  fontSize: tight ? 11.2 : 12.5,
+                  height: tight ? 1.22 : 1.32,
+                ),
               ),
-            ),
+            ],
           ],
         );
 
-        final highlights = _DetailHighlights(content: content);
+        final highlights = _DetailHighlights(
+          content: content,
+          singleRow: content.category == FeatureCategory.iot,
+        );
 
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 14 : 18,
-            vertical: compact ? 12 : 14,
+            horizontal: narrow
+                ? 10
+                : compact
+                    ? 14
+                    : 18,
+            vertical: narrow
+                ? 8
+                : compact
+                    ? 12
+                    : 14,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.82),
@@ -2552,7 +2757,7 @@ class _DetailHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     heroText,
-                    const SizedBox(height: 10),
+                    SizedBox(height: tight ? 6 : 10),
                     highlights,
                   ],
                 )
@@ -2571,19 +2776,45 @@ class _DetailHero extends StatelessWidget {
 }
 
 class _DetailHighlights extends StatelessWidget {
-  const _DetailHighlights({required this.content});
+  const _DetailHighlights({
+    required this.content,
+    this.singleRow = false,
+  });
 
   final _FeatureCategoryContent content;
+  final bool singleRow;
 
   @override
   Widget build(BuildContext context) {
     final highlights = _detailHighlightItems(content.category);
+    final tight = MediaQuery.sizeOf(context).width < 430;
+
+    if (singleRow) {
+      return Row(
+        children: highlights
+            .map(
+              (item) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: item == highlights.last ? 0 : (tight ? 5 : 8),
+                  ),
+                  child: _DetailHighlightTile(
+                    item: item,
+                    color: content.iconColor,
+                    singleRow: true,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
 
     return Column(
       children: highlights
           .map(
             (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: EdgeInsets.only(bottom: tight ? 4 : 6),
               child: _DetailHighlightTile(
                 item: item,
                 color: content.iconColor,
@@ -2667,15 +2898,21 @@ class _DetailHighlightTile extends StatelessWidget {
   const _DetailHighlightTile({
     required this.item,
     required this.color,
+    this.singleRow = false,
   });
 
   final _DetailHighlightItem item;
   final Color color;
+  final bool singleRow;
 
   @override
   Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: singleRow ? (tight ? 5 : 7) : (tight ? 8 : 10),
+        vertical: singleRow ? (tight ? 6 : 7) : (tight ? 5 : 8),
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
@@ -2686,8 +2923,8 @@ class _DetailHighlightTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: singleRow ? (tight ? 20 : 24) : (tight ? 24 : 30),
+            height: singleRow ? (tight ? 20 : 24) : (tight ? 24 : 30),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
@@ -2695,10 +2932,10 @@ class _DetailHighlightTile extends StatelessWidget {
             child: Icon(
               item.icon,
               color: color,
-              size: 16,
+              size: singleRow ? (tight ? 12 : 14) : (tight ? 14 : 16),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: singleRow ? (tight ? 4 : 6) : (tight ? 7 : 8)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2707,22 +2944,25 @@ class _DetailHighlightTile extends StatelessWidget {
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF24314F),
-                    fontSize: 12.5,
-                    height: 1.1,
+                  style: TextStyle(
+                    color: const Color(0xFF24314F),
+                    fontSize: singleRow
+                        ? (tight ? 9.2 : 10.2)
+                        : (tight ? 11.4 : 12.5),
+                    height: tight ? 1.05 : 1.1,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 1),
+                SizedBox(height: tight ? 0 : 1),
                 Text(
                   item.supporting,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF52617F),
-                    fontSize: 10.5,
-                    height: 1.1,
+                  style: TextStyle(
+                    color: const Color(0xFF52617F),
+                    fontSize:
+                        singleRow ? (tight ? 7.8 : 8.8) : (tight ? 9.6 : 10.5),
+                    height: tight ? 1.05 : 1.1,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -2780,22 +3020,28 @@ class _AutomationCarousel extends StatefulWidget {
 }
 
 class _AutomationCarouselState extends State<_AutomationCarousel> {
-  final PageController _controller = PageController(viewportFraction: 0.78);
+  late final PageController _controller;
   int _currentPage = 0;
   int _selectedAutomationIndex = 0;
 
   static const _items = [
     _AutomationCarouselItem(
       icon: Icons.home_work_rounded,
-      title: 'Home auto',
-      subtitle: 'Simple smart control for rooms, devices, and daily scenes.',
+      title: 'Smart Home Automation',
+      subtitle: '',
     ),
     _AutomationCarouselItem(
       icon: Icons.apartment_rounded,
       title: 'Commercial Building',
-      subtitle: 'Automation workflows for offices, shared spaces, and teams.',
+      subtitle: '',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(viewportFraction: 0.98);
+  }
 
   @override
   void dispose() {
@@ -2817,9 +3063,14 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 720;
+        final narrow = constraints.maxWidth < 390;
 
         return Container(
-          padding: EdgeInsets.all(compact ? 14 : 16),
+          padding: EdgeInsets.all(narrow
+              ? 12
+              : compact
+                  ? 14
+                  : 16),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.72),
             borderRadius: BorderRadius.circular(24),
@@ -2841,7 +3092,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                       'Automation areas',
                       style: TextStyle(
                         color: widget.color,
-                        fontSize: 13,
+                        fontSize: narrow ? 12.5 : 13,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.8,
                       ),
@@ -2852,7 +3103,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                     enabled: _currentPage > 0,
                     onTap: () => _goTo(_currentPage - 1),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: narrow ? 6 : 8),
                   _CarouselIconButton(
                     icon: Icons.arrow_forward_rounded,
                     enabled: _currentPage < _items.length - 1,
@@ -2860,9 +3111,13 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: narrow ? 8 : 10),
               SizedBox(
-                height: compact ? 155 : 175,
+                height: narrow
+                    ? 74
+                    : compact
+                        ? 88
+                        : 108,
                 child: PageView.builder(
                   controller: _controller,
                   itemCount: _items.length,
@@ -2877,13 +3132,19 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOutCubic,
                       padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 7 : 10,
+                        horizontal: narrow
+                            ? 5
+                            : compact
+                                ? 7
+                                : 10,
                         vertical: index == _currentPage ? 0 : 8,
                       ),
                       child: _AutomationCarouselCard(
                         item: _items[index],
                         color: widget.color,
                         selected: index == _currentPage,
+                        compact: compact,
+                        narrow: narrow,
                         onTap: () {
                           setState(() {
                             _currentPage = index;
@@ -2896,7 +3157,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: narrow ? 8 : 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: _items.asMap().entries.map((entry) {
@@ -2915,7 +3176,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: narrow ? 12 : 16),
               _AutomationImagePanel(
                 color: widget.color,
                 assetPath: _assetForAutomationIndex(_selectedAutomationIndex),
@@ -2952,12 +3213,16 @@ class _AutomationCarouselCard extends StatelessWidget {
     required this.item,
     required this.color,
     required this.selected,
+    required this.compact,
+    required this.narrow,
     required this.onTap,
   });
 
   final _AutomationCarouselItem item;
   final Color color;
   final bool selected;
+  final bool compact;
+  final bool narrow;
   final VoidCallback onTap;
 
   @override
@@ -2973,7 +3238,10 @@ class _AutomationCarouselCard extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(
+              horizontal: narrow ? 12 : 16,
+              vertical: narrow ? 10 : 14,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -2994,12 +3262,20 @@ class _AutomationCarouselCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: narrow
+                      ? 36
+                      : compact
+                          ? 40
+                          : 44,
+                  height: narrow
+                      ? 36
+                      : compact
+                          ? 40
+                          : 44,
                   decoration: BoxDecoration(
                     color: selected
                         ? Colors.white.withValues(alpha: 0.16)
@@ -3009,34 +3285,30 @@ class _AutomationCarouselCard extends StatelessWidget {
                   child: Icon(
                     item.icon,
                     color: selected ? Colors.white : color,
-                    size: 23,
+                    size: narrow
+                        ? 19
+                        : compact
+                            ? 21
+                            : 23,
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: selected ? Colors.white : const Color(0xFF17233F),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    height: 1.08,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item.subtitle,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: selected
-                        ? const Color(0xFFDDE7FF)
-                        : const Color(0xFF4C5873),
-                    fontSize: 12.5,
-                    height: 1.25,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: selected ? Colors.white : const Color(0xFF17233F),
+                      fontSize: narrow
+                          ? 17
+                          : compact
+                              ? 18
+                              : 20,
+                      fontWeight: FontWeight.w900,
+                      height: 1.08,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ),
               ],
@@ -3097,12 +3369,25 @@ class _NativeAutomationTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return showFacilities
-        ? _FacilityAutomationTable(color: color)
+        ? Column(
+            children: [
+              _FacilityAutomationTable(color: color),
+              const SizedBox(height: 16),
+              _AutomationEstimatorCard(
+                key: const ValueKey('commercial-estimator'),
+                color: color,
+                commercial: true,
+              ),
+            ],
+          )
         : Column(
             children: [
               _SmartHomeNativeTable(color: color),
               const SizedBox(height: 16),
-              _AutomationEstimatorCard(color: color),
+              _AutomationEstimatorCard(
+                key: const ValueKey('home-estimator'),
+                color: color,
+              ),
             ],
           );
   }
@@ -3355,54 +3640,64 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FBFF),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'Smart Home Automation',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF0C1D4A),
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tight = constraints.maxWidth < 430;
+        return Container(
+          padding: EdgeInsets.all(tight ? 10 : 18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FBFF),
+            borderRadius: BorderRadius.circular(18),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Connected controls, routines, and sensor-ready automation for smart spaces',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF52617F), fontSize: 13),
+          child: Column(
+            children: [
+              Text(
+                'Smart Home Automation',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: const Color(0xFF0C1D4A),
+                  fontSize: tight ? 20 : 28,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Connected controls, routines, and sensor-ready automation for smart spaces',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF52617F),
+                  fontSize: tight ? 11 : 13,
+                ),
+              ),
+              SizedBox(height: tight ? 10 : 18),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: _selectedItem == null
+                    ? _SmartHomeAutomationGrid(
+                        key: const ValueKey('smart-home-grid'),
+                        items: _rows,
+                        color: widget.color,
+                        onSelected: (item) {
+                          setState(() => _selectedItem = item);
+                        },
+                      )
+                    : _AutomationSensorDetailPanel(
+                        key: ValueKey(_selectedItem!.label),
+                        item: _selectedItem!,
+                        color: widget.color,
+                        onBack: () {
+                          setState(() => _selectedItem = null);
+                        },
+                      ),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: _selectedItem == null
-                ? _SmartHomeAutomationGrid(
-                    key: const ValueKey('smart-home-grid'),
-                    items: _rows,
-                    color: widget.color,
-                    onSelected: (item) {
-                      setState(() => _selectedItem = item);
-                    },
-                  )
-                : _AutomationSensorDetailPanel(
-                    key: ValueKey(_selectedItem!.label),
-                    item: _selectedItem!,
-                    color: widget.color,
-                    onBack: () {
-                      setState(() => _selectedItem = null);
-                    },
-                  ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -3423,21 +3718,29 @@ class _SmartHomeAutomationGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 980
-            ? 5
-            : constraints.maxWidth >= 700
-                ? 4
-                : 2;
+        final compact = constraints.maxWidth < 430;
+        final columns = compact
+            ? 3
+            : constraints.maxWidth >= 980
+                ? 5
+                : constraints.maxWidth >= 700
+                    ? 4
+                    : 2;
         return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: compact ? 7 : 12,
+          runSpacing: compact ? 7 : 12,
           children: items
               .map(
                 (row) => SizedBox(
-                  width: _gridWidth(constraints.maxWidth, columns, 12),
+                  width: _gridWidth(
+                    constraints.maxWidth,
+                    columns,
+                    compact ? 7 : 12,
+                  ),
                   child: _AutomationHomeButton(
                     item: row,
                     color: color,
+                    compact: compact,
                     onTap: () => onSelected(row),
                   ),
                 ),
@@ -3453,11 +3756,13 @@ class _AutomationHomeButton extends StatelessWidget {
   const _AutomationHomeButton({
     required this.item,
     required this.color,
+    required this.compact,
     required this.onTap,
   });
 
   final _AutomationButtonData item;
   final Color color;
+  final bool compact;
   final VoidCallback onTap;
 
   @override
@@ -3468,7 +3773,10 @@ class _AutomationHomeButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Ink(
-          padding: const EdgeInsets.all(14),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 6 : 14,
+            vertical: compact ? 8 : 14,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -3481,43 +3789,77 @@ class _AutomationHomeButton extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Icon(item.icon, color: color, size: 28),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: compact
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(item.icon, color: color, size: 22),
+                    const SizedBox(height: 5),
                     Text(
                       item.label,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF0C1D4A),
-                        fontSize: 13,
-                        height: 1.15,
+                        fontSize: 10,
+                        height: 1.05,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     if (item.supporting != null) ...[
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 3),
                       Text(
                         item.supporting!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Color(0xFF52617F),
-                          fontSize: 11.5,
-                          height: 1.25,
+                          fontSize: 8.5,
+                          height: 1.05,
                         ),
                       ),
                     ],
                   ],
+                )
+              : Row(
+                  children: [
+                    Icon(item.icon, color: color, size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.label,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF0C1D4A),
+                              fontSize: 13,
+                              height: 1.15,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          if (item.supporting != null) ...[
+                            const SizedBox(height: 5),
+                            Text(
+                              item.supporting!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF52617F),
+                                fontSize: 11.5,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -3538,9 +3880,10 @@ class _AutomationSensorDetailPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(tight ? 10 : 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -3795,10 +4138,35 @@ class _EstimateLineItem {
   int get total => quantity * unitPrice;
 }
 
+class _EstimateDraftControllers {
+  _EstimateDraftControllers({
+    required this.option,
+    required int price,
+  })  : roomController = TextEditingController(text: option.defaultRoom),
+        quantityController = TextEditingController(text: '1'),
+        unitPriceController = TextEditingController(text: '$price');
+
+  final _EstimateOptionData option;
+  final TextEditingController roomController;
+  final TextEditingController quantityController;
+  final TextEditingController unitPriceController;
+
+  void dispose() {
+    roomController.dispose();
+    quantityController.dispose();
+    unitPriceController.dispose();
+  }
+}
+
 class _AutomationEstimatorCard extends StatefulWidget {
-  const _AutomationEstimatorCard({required this.color});
+  const _AutomationEstimatorCard({
+    super.key,
+    required this.color,
+    this.commercial = false,
+  });
 
   final Color color;
+  final bool commercial;
 
   @override
   State<_AutomationEstimatorCard> createState() =>
@@ -3806,7 +4174,7 @@ class _AutomationEstimatorCard extends StatefulWidget {
 }
 
 class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
-  static const _options = [
+  static const _homeOptions = [
     _EstimateOptionData(
       id: 'lighting',
       icon: Icons.lightbulb_outline_rounded,
@@ -3910,10 +4278,10 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
     _EstimateOptionData(
       id: 'app',
       icon: Icons.devices_rounded,
-      title: 'App / Web Control',
+      title: 'Mobile / Web Control',
       unitLabel: 'setup',
       defaultRoom: 'Project',
-      defaultPrice: 5000,
+      defaultPrice: 2500,
       included: [
         'Mobile app access',
         'Web dashboard access',
@@ -3923,58 +4291,151 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
     ),
   ];
 
-  static final Map<String, int> _savedPrices = {
-    for (final option in _options) option.id: option.defaultPrice,
-  };
+  static const _commercialDashboardOption = _EstimateOptionData(
+    id: 'app',
+    icon: Icons.dashboard_customize_outlined,
+    title: 'Commercial Dashboard',
+    unitLabel: 'setup',
+    defaultRoom: 'Project',
+    defaultPrice: 5000,
+    included: [
+      'Admin web dashboard',
+      'Mobile app access',
+      'Basic user roles',
+      'Remote monitoring ready',
+    ],
+  );
 
   final List<_EstimateLineItem> _items = [];
-  final _roomController = TextEditingController();
-  final _quantityController = TextEditingController(text: '1');
-  final _unitPriceController = TextEditingController();
-  _EstimateOptionData _selectedOption = _options.first;
+  final Map<String, _EstimateDraftControllers> _drafts = {};
+  late Map<String, int> _savedPrices;
+  late _FacilityAutomationRowData _selectedFacility;
   bool _showInternalPricing = false;
+
+  List<_FacilityAutomationRowData> get _commercialFacilities =>
+      _facilityAutomationRows();
+
+  List<_EstimateOptionData> get _commercialOptions => [
+        ..._commercialEstimateOptionsForFacility(_selectedFacility),
+        _commercialDashboardOption,
+      ];
+
+  List<_EstimateOptionData> get _allCommercialOptions => [
+        for (final facility in _commercialFacilities)
+          ..._commercialEstimateOptionsForFacility(facility),
+        _commercialDashboardOption,
+      ];
+
+  List<_EstimateOptionData> get _options =>
+      widget.commercial ? _commercialOptions : _homeOptions;
+
+  String get _estimateTitle => widget.commercial
+      ? 'Commercial Automation Estimate'
+      : 'Smart Automation Estimate';
+
+  String get _emptySummaryText => widget.commercial
+      ? 'Add commercial automation items to build the estimate.'
+      : 'Add automation items to build the estimate.';
+
+  String get _appControlLabel => widget.commercial
+      ? 'Commercial Web / App Dashboard'
+      : 'Mobile / Web App Control';
 
   @override
   void initState() {
     super.initState();
-    _applyOption(_selectedOption);
+    _resetEstimator();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AutomationEstimatorCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.commercial != widget.commercial) {
+      setState(() {
+        _items.clear();
+        _resetEstimator();
+        _showInternalPricing = false;
+      });
+    }
+  }
+
+  void _resetEstimator() {
+    if (widget.commercial) {
+      _selectedFacility = _commercialFacilities.first;
+    }
+    _savedPrices = {
+      for (final option in widget.commercial ? _allCommercialOptions : _options)
+        option.id: option.defaultPrice,
+    };
+    _replaceDrafts([_options.first]);
   }
 
   @override
   void dispose() {
-    _roomController.dispose();
-    _quantityController.dispose();
-    _unitPriceController.dispose();
+    for (final draft in _drafts.values) {
+      draft.dispose();
+    }
     super.dispose();
   }
 
-  void _applyOption(_EstimateOptionData option) {
-    _selectedOption = option;
-    _roomController.text = option.defaultRoom;
-    _quantityController.text = '1';
-    _unitPriceController.text =
-        '${_savedPrices[option.id] ?? option.defaultPrice}';
+  void _replaceDrafts(List<_EstimateOptionData> options) {
+    for (final draft in _drafts.values) {
+      draft.dispose();
+    }
+    _drafts
+      ..clear()
+      ..addEntries(
+        options.map(
+          (option) => MapEntry(
+            option.id,
+            _EstimateDraftControllers(
+              option: option,
+              price: _savedPrices[option.id] ?? option.defaultPrice,
+            ),
+          ),
+        ),
+      );
   }
 
-  int get _grandTotal => _items.fold(0, (total, item) => total + item.total);
+  void _toggleOption(_EstimateOptionData option) {
+    final existing = _drafts.remove(option.id);
+    if (existing != null) {
+      existing.dispose();
+      return;
+    }
+    _drafts[option.id] = _EstimateDraftControllers(
+      option: option,
+      price: _savedPrices[option.id] ?? option.defaultPrice,
+    );
+  }
+
+  int get _appControlPrice => _savedPrices['app'] ?? 2500;
+
+  int get _grandTotal =>
+      _appControlPrice + _items.fold(0, (total, item) => total + item.total);
 
   void _addEstimateItem() {
-    final quantity = int.tryParse(_quantityController.text) ?? 0;
-    final unitPrice = int.tryParse(_unitPriceController.text) ?? 0;
-    final room = _roomController.text.trim().isEmpty
-        ? _selectedOption.defaultRoom
-        : _roomController.text.trim();
-    if (quantity <= 0 || unitPrice <= 0) return;
-
-    setState(() {
-      _items.add(
+    final addedItems = <_EstimateLineItem>[];
+    for (final draft in _drafts.values) {
+      final quantity = int.tryParse(draft.quantityController.text) ?? 0;
+      final unitPrice = int.tryParse(draft.unitPriceController.text) ?? 0;
+      final room = draft.roomController.text.trim().isEmpty
+          ? draft.option.defaultRoom
+          : draft.roomController.text.trim();
+      if (quantity <= 0 || unitPrice <= 0) continue;
+      addedItems.add(
         _EstimateLineItem(
-          option: _selectedOption,
+          option: draft.option,
           room: room,
           quantity: quantity,
           unitPrice: unitPrice,
         ),
       );
+    }
+    if (addedItems.isEmpty) return;
+
+    setState(() {
+      _items.addAll(addedItems);
     });
   }
 
@@ -4036,8 +4497,10 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
                   _savedPrices
                     ..clear()
                     ..addAll(prices);
-                  _unitPriceController.text =
-                      '${_savedPrices[_selectedOption.id] ?? _selectedOption.defaultPrice}';
+                  for (final draft in _drafts.values) {
+                    draft.unitPriceController.text =
+                        '${_savedPrices[draft.option.id] ?? draft.option.defaultPrice}';
+                  }
                   _showInternalPricing = false;
                 });
               },
@@ -4046,15 +4509,24 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
           : _EstimatorCustomerPanel(
               key: const ValueKey('customer-estimator'),
               color: widget.color,
+              title: _estimateTitle,
+              emptySummaryText: _emptySummaryText,
+              appControlLabel: _appControlLabel,
+              commercial: widget.commercial,
+              facilities: _commercialFacilities,
+              selectedFacility: widget.commercial ? _selectedFacility : null,
               options: _options,
-              selectedOption: _selectedOption,
-              roomController: _roomController,
-              quantityController: _quantityController,
-              unitPriceController: _unitPriceController,
+              drafts: _drafts.values.toList(),
               items: _items,
+              appControlPrice: _appControlPrice,
               grandTotal: _grandTotal,
-              onOptionSelected: (option) {
-                setState(() => _applyOption(option));
+              onOptionSelected: (option) =>
+                  setState(() => _toggleOption(option)),
+              onFacilitySelected: (facility) {
+                setState(() {
+                  _selectedFacility = facility;
+                  _replaceDrafts([_options.first]);
+                });
               },
               onAdd: _addEstimateItem,
               onRemove: (index) {
@@ -4070,37 +4542,48 @@ class _EstimatorCustomerPanel extends StatelessWidget {
   const _EstimatorCustomerPanel({
     super.key,
     required this.color,
+    required this.title,
+    required this.emptySummaryText,
+    required this.appControlLabel,
+    required this.commercial,
+    required this.facilities,
+    required this.selectedFacility,
     required this.options,
-    required this.selectedOption,
-    required this.roomController,
-    required this.quantityController,
-    required this.unitPriceController,
+    required this.drafts,
     required this.items,
+    required this.appControlPrice,
     required this.grandTotal,
     required this.onOptionSelected,
+    required this.onFacilitySelected,
     required this.onAdd,
     required this.onRemove,
     required this.onInternalAccess,
   });
 
   final Color color;
+  final String title;
+  final String emptySummaryText;
+  final String appControlLabel;
+  final bool commercial;
+  final List<_FacilityAutomationRowData> facilities;
+  final _FacilityAutomationRowData? selectedFacility;
   final List<_EstimateOptionData> options;
-  final _EstimateOptionData selectedOption;
-  final TextEditingController roomController;
-  final TextEditingController quantityController;
-  final TextEditingController unitPriceController;
+  final List<_EstimateDraftControllers> drafts;
   final List<_EstimateLineItem> items;
+  final int appControlPrice;
   final int grandTotal;
   final ValueChanged<_EstimateOptionData> onOptionSelected;
+  final ValueChanged<_FacilityAutomationRowData> onFacilitySelected;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
   final VoidCallback onInternalAccess;
 
   @override
   Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(tight ? 10 : 18),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FBFF),
         borderRadius: BorderRadius.circular(18),
@@ -4115,22 +4598,13 @@ class _EstimatorCustomerPanel extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Smart Automation Estimate',
+                      title,
                       style: TextStyle(
-                        color: Color(0xFF0C1D4A),
-                        fontSize: 24,
+                        color: const Color(0xFF0C1D4A),
+                        fontSize: tight ? 18 : 24,
                         fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Build a rough estimate by room, device count, and automation type.',
-                      style: TextStyle(
-                        color: Color(0xFF52617F),
-                        fontSize: 12.5,
-                        height: 1.3,
                       ),
                     ),
                   ],
@@ -4146,7 +4620,7 @@ class _EstimatorCustomerPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: tight ? 10 : 16),
           LayoutBuilder(
             builder: (context, constraints) {
               final wide = constraints.maxWidth >= 880;
@@ -4161,11 +4635,13 @@ class _EstimatorCustomerPanel extends StatelessWidget {
                   width: leftWidth,
                   child: _EstimatorBuilderPanel(
                     color: color,
-                    options: options,
-                    selectedOption: selectedOption,
-                    roomController: roomController,
-                    quantityController: quantityController,
-                    unitPriceController: unitPriceController,
+                    commercial: commercial,
+                    facilities: facilities,
+                    selectedFacility: selectedFacility,
+                    options:
+                        options.where((option) => option.id != 'app').toList(),
+                    drafts: drafts,
+                    onFacilitySelected: onFacilitySelected,
                     onOptionSelected: onOptionSelected,
                     onAdd: onAdd,
                   ),
@@ -4175,25 +4651,28 @@ class _EstimatorCustomerPanel extends StatelessWidget {
                   child: _EstimateSummaryPanel(
                     color: color,
                     items: items,
+                    appControlPrice: appControlPrice,
+                    appControlLabel: appControlLabel,
+                    emptyText: emptySummaryText,
                     grandTotal: grandTotal,
                     onRemove: onRemove,
                   ),
                 ),
               ];
               return Wrap(
-                spacing: 16,
-                runSpacing: 16,
+                spacing: tight ? 8 : 16,
+                runSpacing: tight ? 8 : 16,
                 children: children,
               );
             },
           ),
-          const SizedBox(height: 12),
-          const Text(
+          SizedBox(height: tight ? 7 : 12),
+          Text(
             'Approximate estimate only. Final pricing may vary by wiring, brand, device model, and site condition.',
             style: TextStyle(
-              color: Color(0xFF6B7896),
-              fontSize: 11.5,
-              height: 1.3,
+              color: const Color(0xFF6B7896),
+              fontSize: tight ? 9.5 : 11.5,
+              height: tight ? 1.15 : 1.3,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -4206,214 +4685,78 @@ class _EstimatorCustomerPanel extends StatelessWidget {
 class _EstimatorBuilderPanel extends StatelessWidget {
   const _EstimatorBuilderPanel({
     required this.color,
+    required this.commercial,
+    required this.facilities,
+    required this.selectedFacility,
     required this.options,
-    required this.selectedOption,
-    required this.roomController,
-    required this.quantityController,
-    required this.unitPriceController,
+    required this.drafts,
+    required this.onFacilitySelected,
     required this.onOptionSelected,
     required this.onAdd,
   });
 
   final Color color;
+  final bool commercial;
+  final List<_FacilityAutomationRowData> facilities;
+  final _FacilityAutomationRowData? selectedFacility;
   final List<_EstimateOptionData> options;
-  final _EstimateOptionData selectedOption;
-  final TextEditingController roomController;
-  final TextEditingController quantityController;
-  final TextEditingController unitPriceController;
+  final List<_EstimateDraftControllers> drafts;
+  final ValueChanged<_FacilityAutomationRowData> onFacilitySelected;
   final ValueChanged<_EstimateOptionData> onOptionSelected;
   final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: options.map((option) {
-            final selected = option.id == selectedOption.id;
-            return SizedBox(
-              width: 142,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: () => onOptionSelected(option),
-                child: Ink(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        selected ? color.withValues(alpha: 0.1) : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: selected
-                          ? color.withValues(alpha: 0.35)
-                          : color.withValues(alpha: 0.1),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: selected ? 0.14 : 0.06),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(option.icon, color: color, size: 22),
-                      const SizedBox(height: 8),
-                      Text(
-                        option.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: const Color(0xFF0C1D4A),
-                          fontSize: 12,
-                          height: 1.15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+        if (commercial) ...[
+          _FacilityDropdown(
+            color: color,
+            facilities: facilities,
+            selectedFacility: selectedFacility ?? facilities.first,
+            onChanged: onFacilitySelected,
+          ),
+          SizedBox(height: tight ? 8 : 12),
+        ],
+        _EstimateOptionSelector(
+          color: color,
+          commercial: commercial,
+          tight: tight,
+          options: options,
+          selectedIds: drafts.map((draft) => draft.option.id).toSet(),
+          onOptionSelected: onOptionSelected,
         ),
-        const SizedBox(height: 14),
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                selectedOption.title,
-                style: const TextStyle(
-                  color: Color(0xFF0C1D4A),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  SizedBox(
-                    width: 190,
-                    child: TextField(
-                      controller: roomController,
-                      decoration: const InputDecoration(
-                        labelText: 'Room / Area',
-                        hintText: 'Living Room',
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      controller: quantityController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Quantity',
-                        hintText: selectedOption.unitLabel,
-                        isDense: true,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 160,
-                    child: TextField(
-                      controller: unitPriceController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Unit price',
-                        prefixText: 'Rs ',
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Included / Suggested',
-                style: TextStyle(
-                  color: Color(0xFF0C1D4A),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...selectedOption.included.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: color, size: 16),
-                      const SizedBox(width: 7),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: const TextStyle(
-                            color: Color(0xFF52617F),
-                            fontSize: 12,
-                            height: 1.25,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton.icon(
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('Add to Estimate'),
-                ),
-              ),
-            ],
-          ),
+        SizedBox(height: tight ? 8 : 14),
+        _EstimateDraftsPanel(
+          color: color,
+          tight: tight,
+          drafts: drafts,
+          onAdd: onAdd,
         ),
       ],
     );
   }
 }
 
-class _EstimateSummaryPanel extends StatelessWidget {
-  const _EstimateSummaryPanel({
+class _EstimateDraftsPanel extends StatelessWidget {
+  const _EstimateDraftsPanel({
     required this.color,
-    required this.items,
-    required this.grandTotal,
-    required this.onRemove,
+    required this.tight,
+    required this.drafts,
+    required this.onAdd,
   });
 
   final Color color;
-  final List<_EstimateLineItem> items;
-  final int grandTotal;
-  final ValueChanged<int> onRemove;
+  final bool tight;
+  final List<_EstimateDraftControllers> drafts;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(tight ? 10 : 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -4422,96 +4765,629 @@ class _EstimateSummaryPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          if (drafts.isEmpty)
+            Text(
+              'Select one or more items to add.',
+              style: TextStyle(
+                color: const Color(0xFF52617F),
+                fontSize: tight ? 11 : 12.5,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            ...drafts.asMap().entries.map((entry) {
+              final draft = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom:
+                      entry.key == drafts.length - 1 ? 0 : (tight ? 10 : 12),
+                ),
+                child: _EstimateDraftRow(
+                  draft: draft,
+                  tight: tight,
+                ),
+              );
+            }),
+          SizedBox(height: tight ? 8 : 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.symmetric(
+                  horizontal: tight ? 10 : 14,
+                  vertical: tight ? 7 : 10,
+                ),
+                textStyle: TextStyle(fontSize: tight ? 11 : 13),
+              ),
+              onPressed: drafts.isEmpty ? null : onAdd,
+              icon: Icon(Icons.add_rounded, size: tight ? 16 : 18),
+              label: const Text('Add'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EstimateDraftRow extends StatelessWidget {
+  const _EstimateDraftRow({
+    required this.draft,
+    required this.tight,
+  });
+
+  final _EstimateDraftControllers draft;
+  final bool tight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          draft.option.title,
+          style: TextStyle(
+            color: const Color(0xFF0C1D4A),
+            fontSize: tight ? 14 : 16,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        SizedBox(height: tight ? 7 : 10),
+        Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: _EstimateTextField(
+                controller: draft.roomController,
+                label: 'Room / Area',
+                hint: draft.option.defaultRoom,
+                tight: tight,
+              ),
+            ),
+            SizedBox(width: tight ? 6 : 10),
+            Expanded(
+              flex: 3,
+              child: _EstimateTextField(
+                controller: draft.quantityController,
+                label: 'Qty',
+                hint: draft.option.unitLabel,
+                tight: tight,
+                digitsOnly: true,
+              ),
+            ),
+            SizedBox(width: tight ? 6 : 10),
+            Expanded(
+              flex: 4,
+              child: _EstimateTextField(
+                controller: draft.unitPriceController,
+                label: 'Unit price',
+                prefix: 'Rs ',
+                tight: tight,
+                digitsOnly: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _EstimateOptionSelector extends StatelessWidget {
+  const _EstimateOptionSelector({
+    required this.color,
+    required this.commercial,
+    required this.tight,
+    required this.options,
+    required this.selectedIds,
+    required this.onOptionSelected,
+  });
+
+  final Color color;
+  final bool commercial;
+  final bool tight;
+  final List<_EstimateOptionData> options;
+  final Set<String> selectedIds;
+  final ValueChanged<_EstimateOptionData> onOptionSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (commercial) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final option in options) ...[
+              SizedBox(
+                width: tight ? 112 : 132,
+                child: _EstimateOptionButton(
+                  color: color,
+                  tight: tight,
+                  option: option,
+                  selected: selectedIds.contains(option.id),
+                  onTap: () => onOptionSelected(option),
+                ),
+              ),
+              if (option != options.last) SizedBox(width: tight ? 6 : 10),
+            ],
+          ],
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = tight ? 4 : 3;
+        final gap = tight ? 6.0 : 10.0;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: options.map((option) {
+            return SizedBox(
+              width:
+                  tight ? _gridWidth(constraints.maxWidth, columns, gap) : 142,
+              child: _EstimateOptionButton(
+                color: color,
+                tight: tight,
+                option: option,
+                selected: selectedIds.contains(option.id),
+                onTap: () => onOptionSelected(option),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
+class _EstimateOptionButton extends StatelessWidget {
+  const _EstimateOptionButton({
+    required this.color,
+    required this.tight,
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Color color;
+  final bool tight;
+  final _EstimateOptionData option;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Ink(
+        padding: EdgeInsets.symmetric(
+          horizontal: tight ? 5 : 12,
+          vertical: tight ? 7 : 12,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(tight ? 11 : 14),
+          border: Border.all(
+            color: selected
+                ? color.withValues(alpha: 0.35)
+                : color.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: selected ? 0.12 : 0.045),
+              blurRadius: tight ? 8 : 12,
+              offset: Offset(0, tight ? 3 : 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(option.icon, color: color, size: tight ? 18 : 22),
+                if (selected)
+                  Positioned(
+                    right: -8,
+                    top: -7,
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: color,
+                      size: tight ? 12 : 14,
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: tight ? 4 : 8),
+            Text(
+              option.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF0C1D4A),
+                fontSize: tight ? 8.7 : 12,
+                height: tight ? 1.05 : 1.15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FacilityDropdown extends StatelessWidget {
+  const _FacilityDropdown({
+    required this.color,
+    required this.facilities,
+    required this.selectedFacility,
+    required this.onChanged,
+  });
+
+  final Color color;
+  final List<_FacilityAutomationRowData> facilities;
+  final _FacilityAutomationRowData selectedFacility;
+  final ValueChanged<_FacilityAutomationRowData> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
+    return DropdownButtonFormField<_FacilityAutomationRowData>(
+      value: selectedFacility,
+      isExpanded: true,
+      icon: Icon(Icons.keyboard_arrow_down_rounded, color: color),
+      decoration: InputDecoration(
+        labelText: 'Facility',
+        filled: true,
+        fillColor: Colors.white,
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: tight ? 10 : 12,
+          vertical: tight ? 10 : 13,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.14)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.14)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.34)),
+        ),
+      ),
+      items: facilities
+          .map(
+            (facility) => DropdownMenuItem<_FacilityAutomationRowData>(
+              value: facility,
+              child: Row(
+                children: [
+                  Icon(facility.icon, color: color, size: tight ? 18 : 20),
+                  SizedBox(width: tight ? 8 : 10),
+                  Expanded(
+                    child: Text(
+                      facility.facility,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFF0C1D4A),
+                        fontSize: tight ? 12 : 13.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (facility) {
+        if (facility != null) onChanged(facility);
+      },
+    );
+  }
+}
+
+class _EstimateTextField extends StatelessWidget {
+  const _EstimateTextField({
+    required this.controller,
+    required this.label,
+    required this.tight,
+    this.hint,
+    this.prefix,
+    this.digitsOnly = false,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final bool tight;
+  final String? hint;
+  final String? prefix;
+  final bool digitsOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: digitsOnly ? TextInputType.number : TextInputType.text,
+      inputFormatters:
+          digitsOnly ? [FilteringTextInputFormatter.digitsOnly] : null,
+      style: TextStyle(fontSize: tight ? 11 : null),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixText: prefix,
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: tight ? 7 : 10,
+          vertical: tight ? 8 : 12,
+        ),
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
+}
+
+class _EstimateSummaryPanel extends StatelessWidget {
+  const _EstimateSummaryPanel({
+    required this.color,
+    required this.items,
+    required this.appControlPrice,
+    required this.appControlLabel,
+    required this.emptyText,
+    required this.grandTotal,
+    required this.onRemove,
+  });
+
+  final Color color;
+  final List<_EstimateLineItem> items;
+  final int appControlPrice;
+  final String appControlLabel;
+  final String emptyText;
+  final int grandTotal;
+  final ValueChanged<int> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final tight = MediaQuery.sizeOf(context).width < 430;
+    final subtleBlue = color.withValues(alpha: 0.055);
+    final lineBorder = color.withValues(alpha: 0.13);
+    return Container(
+      padding: EdgeInsets.all(tight ? 10 : 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDFEFF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             'Estimate Summary',
             style: TextStyle(
-              color: Color(0xFF0C1D4A),
-              fontSize: 16,
+              color: const Color(0xFF0C1D4A),
+              fontSize: tight ? 14 : 16,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: tight ? 6 : 10),
           if (items.isEmpty)
-            const Text(
-              'Add automation items to build the estimate.',
+            Text(
+              emptyText,
               style: TextStyle(
-                color: Color(0xFF52617F),
-                fontSize: 12.5,
-                height: 1.3,
+                color: const Color(0xFF52617F),
+                fontSize: tight ? 10.5 : 12.5,
+                height: tight ? 1.15 : 1.3,
               ),
             )
           else
             ...items.asMap().entries.map((entry) {
               final item = entry.value;
               return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
+                margin: EdgeInsets.only(bottom: tight ? 7 : 9),
+                padding: EdgeInsets.symmetric(
+                  horizontal: tight ? 8 : 10,
+                  vertical: tight ? 7 : 9,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FBFF),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withValues(alpha: 0.08)),
+                  gradient: LinearGradient(
+                    colors: [Colors.white, subtleBlue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: lineBorder),
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(item.option.icon, color: color, size: 20),
-                    const SizedBox(width: 9),
+                    Container(
+                      width: tight ? 30 : 36,
+                      height: tight ? 30 : 36,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        item.option.icon,
+                        color: color,
+                        size: tight ? 17 : 20,
+                      ),
+                    ),
+                    SizedBox(width: tight ? 8 : 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${item.room} - ${item.option.title}',
-                            style: const TextStyle(
-                              color: Color(0xFF0C1D4A),
-                              fontSize: 12.5,
+                            item.room,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: const Color(0xFF0C1D4A),
+                              fontSize: tight ? 10.5 : 12.5,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          const SizedBox(height: 3),
+                          SizedBox(height: tight ? 1 : 2),
                           Text(
-                            '${item.quantity} x Rs ${item.unitPrice} = Rs ${item.total}',
-                            style: const TextStyle(
-                              color: Color(0xFF52617F),
-                              fontSize: 11.5,
+                            item.option.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: const Color(0xFF52617F),
+                              fontSize: tight ? 9.5 : 11,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      tooltip: 'Remove',
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () => onRemove(entry.key),
-                      icon: const Icon(Icons.close_rounded),
+                    SizedBox(width: tight ? 6 : 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Rs ${item.total}',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: tight ? 11.5 : 13,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: tight ? 1 : 2),
+                        Text(
+                          '${item.quantity} x ${item.unitPrice}',
+                          style: TextStyle(
+                            color: const Color(0xFF6A7894),
+                            fontSize: tight ? 9 : 10.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: tight ? 4 : 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(999),
+                      onTap: () => onRemove(entry.key),
+                      child: Container(
+                        width: tight ? 26 : 30,
+                        height: tight ? 26 : 30,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF4FF),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: color.withValues(alpha: 0.12),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: const Color(0xFF33425F),
+                          size: tight ? 16 : 18,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               );
             }),
-          const Divider(height: 22),
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Grand Total',
+          Container(
+            margin: EdgeInsets.only(bottom: tight ? 6 : 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: tight ? 8 : 10,
+              vertical: tight ? 7 : 9,
+            ),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.065),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withValues(alpha: 0.15)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: tight ? 30 : 36,
+                  height: tight ? 30 : 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.devices_rounded,
+                    color: color,
+                    size: tight ? 17 : 20,
+                  ),
+                ),
+                SizedBox(width: tight ? 8 : 10),
+                Expanded(
+                  child: Text(
+                    appControlLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF0C1D4A),
+                      fontSize: tight ? 10.5 : 12.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                Text(
+                  'Rs $appControlPrice',
                   style: TextStyle(
-                    color: Color(0xFF0C1D4A),
-                    fontSize: 15,
+                    color: color,
+                    fontSize: tight ? 12 : 13.5,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-              ),
-              Text(
-                'Rs $grandTotal',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
+              ],
+            ),
+          ),
+          Divider(height: tight ? 12 : 18),
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: tight ? 10 : 12,
+              vertical: tight ? 8 : 10,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F9FF),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.08)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Grand Total',
+                    style: TextStyle(
+                      color: const Color(0xFF0C1D4A),
+                      fontSize: tight ? 13 : 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  'Rs $grandTotal',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: tight ? 16 : 19,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -5003,6 +5879,143 @@ List<_FacilityAutomationRowData> _facilityAutomationRows() {
       ],
     ),
   ];
+}
+
+List<_EstimateOptionData> _commercialEstimateOptionsForFacility(
+  _FacilityAutomationRowData facility,
+) {
+  return facility.items
+      .map((item) => _commercialEstimateOption(facility, item))
+      .toList();
+}
+
+_EstimateOptionData _commercialEstimateOption(
+  _FacilityAutomationRowData facility,
+  _AutomationButtonData item,
+) {
+  return _EstimateOptionData(
+    id: 'facility_${_estimateIdPart(facility.facility)}_${_estimateIdPart(item.label)}',
+    icon: item.icon,
+    title: item.label,
+    unitLabel: _commercialUnitLabel(item.label),
+    defaultRoom: facility.facility,
+    defaultPrice: _commercialDefaultPrice(item.label),
+    included: [
+      '${facility.facility} automation point',
+      _commercialIncludedLine(item.label),
+      'Mobile and web dashboard control',
+      'Approximate fitting estimate',
+    ],
+  );
+}
+
+String _estimateIdPart(String value) {
+  final lower = value.toLowerCase();
+  final buffer = StringBuffer();
+  var lastWasUnderscore = false;
+  for (final codeUnit in lower.codeUnits) {
+    final isLetter = codeUnit >= 97 && codeUnit <= 122;
+    final isNumber = codeUnit >= 48 && codeUnit <= 57;
+    if (isLetter || isNumber) {
+      buffer.writeCharCode(codeUnit);
+      lastWasUnderscore = false;
+    } else if (!lastWasUnderscore) {
+      buffer.write('_');
+      lastWasUnderscore = true;
+    }
+  }
+  return buffer.toString().replaceAll(RegExp(r'_+$'), '');
+}
+
+String _commercialUnitLabel(String label) {
+  final lower = label.toLowerCase();
+  if (lower.contains('access') || lower.contains('door')) return 'doors';
+  if (lower.contains('camera') || lower.contains('security')) {
+    return 'camera points';
+  }
+  if (lower.contains('pump') || lower.contains('water')) return 'pump sets';
+  if (lower.contains('energy') || lower.contains('load')) return 'meters';
+  if (lower.contains('ac') || lower.contains('hvac')) return 'AC points';
+  if (lower.contains('light')) return 'lighting zones';
+  if (lower.contains('fire') || lower.contains('smoke')) return 'alert points';
+  if (lower.contains('motion') || lower.contains('occupancy')) {
+    return 'sensor points';
+  }
+  return 'points';
+}
+
+int _commercialDefaultPrice(String label) {
+  final lower = label.toLowerCase();
+  if (lower.contains('light')) return 4500;
+  if (lower.contains('access') ||
+      lower.contains('lock') ||
+      lower.contains('door')) {
+    return 6500;
+  }
+  if (lower.contains('security') || lower.contains('cctv')) return 3500;
+  if (lower.contains('fire') ||
+      lower.contains('smoke') ||
+      lower.contains('gas') ||
+      lower.contains('safety') ||
+      lower.contains('alert')) {
+    return 3000;
+  }
+  if (lower.contains('energy') ||
+      lower.contains('load') ||
+      lower.contains('power') ||
+      lower.contains('ups')) {
+    return 7500;
+  }
+  if (lower.contains('pump') ||
+      lower.contains('water') ||
+      lower.contains('irrigation')) {
+    return 8500;
+  }
+  if (lower.contains('ac') ||
+      lower.contains('hvac') ||
+      lower.contains('fridge') ||
+      lower.contains('cold')) {
+    return 5500;
+  }
+  if (lower.contains('motion') ||
+      lower.contains('occupancy') ||
+      lower.contains('after-hours')) {
+    return 2200;
+  }
+  return 4000;
+}
+
+String _commercialIncludedLine(String label) {
+  final lower = label.toLowerCase();
+  if (lower.contains('access') ||
+      lower.contains('lock') ||
+      lower.contains('door')) {
+    return 'Access device and door-status sensor ready';
+  }
+  if (lower.contains('security')) return 'Remote monitoring ready';
+  if (lower.contains('fire') ||
+      lower.contains('smoke') ||
+      lower.contains('gas')) {
+    return 'Safety sensor and alert workflow ready';
+  }
+  if (lower.contains('energy') ||
+      lower.contains('load') ||
+      lower.contains('power')) {
+    return 'Energy monitoring and usage alerts ready';
+  }
+  if (lower.contains('pump') || lower.contains('water')) {
+    return 'Pump control with sensor trigger option';
+  }
+  if (lower.contains('ac') ||
+      lower.contains('fridge') ||
+      lower.contains('cold')) {
+    return 'Temperature schedule and monitoring ready';
+  }
+  if (lower.contains('motion') || lower.contains('occupancy')) {
+    return 'Presence-based trigger rule ready';
+  }
+  if (lower.contains('light')) return 'Lighting schedule and scene setup';
+  return 'Commercial automation setup ready';
 }
 
 // Kept temporarily while the image-based mockups are phased out.

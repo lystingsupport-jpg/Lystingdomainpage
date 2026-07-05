@@ -1,0 +1,14 @@
+{
+  "name": "lystingdomainpage",
+  "private": true,
+  "scripts": {
+    "build": "flutter build web --release",
+    "deploy": "npm run build && wrangler pages deploy build/web --project-name lystingdomainpage",
+    "deploy:preview": "npm run build && wrangler pages deploy build/web --project-name lystingdomainpage --branch preview",
+    "cf:login": "wrangler login",
+    "cf:whoami": "wrangler whoami"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
