@@ -3504,10 +3504,10 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
   static const _rows = [
     _AutomationButtonData(
       icon: Icons.lightbulb_outline_rounded,
-      label: 'Smart Lighting Control',
-      supporting: 'Lights, dimming, schedules, scenes',
+      label: 'Smart Lighting',
+      supporting: 'Lights and lighting control',
       detail:
-          'Controls room lights with schedules, dimming, scenes, and automatic responses to movement or daylight.',
+          'Controls room lights with app control, schedules, dimming, scenes, and automatic responses to movement or daylight.',
       sensors: [
         'Motion sensor',
         'Ambient light / LDR sensor',
@@ -3517,10 +3517,10 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
     ),
     _AutomationButtonData(
       icon: Icons.mode_fan_off_outlined,
-      label: 'Fan & Appliance Control',
-      supporting: 'Fans, AC, TV, geyser, water motor, appliances',
+      label: 'Home Appliance Control',
+      supporting: 'Fan, TV, heater, and appliances',
       detail:
-          'Turns fans and appliances on or off from the app, remote rules, room conditions, or power usage.',
+          'Turns fans, TV, heaters, and appliances on or off from the app, remote rules, room conditions, or power usage.',
       sensors: [
         'Smart relay module',
         'IR blaster for AC / TV',
@@ -3529,78 +3529,25 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
       ],
     ),
     _AutomationButtonData(
-      icon: Icons.home_outlined,
-      label: 'Room-Wise Automation',
-      supporting: 'Hall, bedroom, kitchen, office, parking groups',
+      icon: Icons.ac_unit_rounded,
+      label: 'AC & Heating Control',
+      supporting: 'AC, heater, thermostat, comfort modes',
       detail:
-          'Groups devices by room so each space can run its own lights, fans, AC, scenes, and safety rules.',
-      sensors: [
-        'Motion / occupancy sensor',
-        'Door sensor',
-        'Temperature sensor',
-        'Smart switches / relays per room',
-      ],
-    ),
-    _AutomationButtonData(
-      icon: Icons.grid_view_rounded,
-      label: 'Scenes & Modes',
-      supporting: 'Morning, Night, Custom modes',
-      detail:
-          'Runs multiple devices together as one mode, like morning, night, movie, away, or custom routines.',
-      sensors: [
-        'Motion sensor',
-        'Light sensor',
-        'Time / schedule trigger',
-        'Smart switches, dimmers, curtains, and AC modules',
-      ],
-    ),
-    _AutomationButtonData(
-      icon: Icons.calendar_month_outlined,
-      label: 'Schedule-Based Automation',
-      supporting: 'Time and routine based actions',
-      detail:
-          'Uses time-based routines to control lights, appliances, pumps, AC, and other devices automatically.',
-      sensors: [
-        'Timer / app scheduler',
-        'Smart relay module',
-        'Power monitoring sensor',
-        'Optional motion sensor for override',
-      ],
-    ),
-    _AutomationButtonData(
-      icon: Icons.curtains_outlined,
-      label: 'Curtain & Gate Automation',
-      supporting: 'Main gate, garage door, sliding doors',
-      detail:
-          'Automates curtains, main gates, garage doors, and sliding doors with safety limits and remote control.',
-      sensors: [
-        'Motor controller',
-        'Limit switch sensor',
-        'Door / gate magnetic sensor',
-        'IR obstacle sensor',
-        'Remote / RF / Wi-Fi control module',
-      ],
-    ),
-    _AutomationButtonData(
-      icon: Icons.device_thermostat_rounded,
-      label: 'Climate Control',
-      supporting: 'AC, thermostat, air purifier, ventilation',
-      detail:
-          'Maintains comfortable room conditions by controlling AC, fans, air purifiers, and ventilation.',
+          'Controls AC and heating with temperature rules, app commands, schedules, comfort modes, and energy-aware automation.',
       sensors: [
         'Temperature sensor',
         'Humidity sensor',
-        'Air quality sensor',
         'IR blaster or thermostat module',
         'Fan / AC relay controller',
+        'Current / power monitoring sensor',
       ],
     ),
     _AutomationButtonData(
       icon: Icons.water_drop_outlined,
-      label: 'Water Motor / Pump Automation',
-      supporting: 'Tank/time/manual motor control',
+      label: 'Water Pump / Motor Control',
+      supporting: 'Tank, timer, and motor control',
       detail:
-          'Controls water pumps using tank level, flow, pressure, time schedules, and dry-run protection.',
+          'Controls water pumps and motors using tank level, flow, time schedules, and dry-run protection.',
       sensors: [
         'Water level sensor',
         'Flow sensor',
@@ -3610,30 +3557,58 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
       ],
     ),
     _AutomationButtonData(
-      icon: Icons.directions_run_rounded,
-      label: 'Motion Sensing Automation',
-      supporting: 'Movement-based actions',
+      icon: Icons.bar_chart_rounded,
+      label: 'Energy Monitoring',
+      supporting: 'Power usage, load status, reports',
       detail:
-          'Triggers lights, alerts, devices, and scenes when movement or presence is detected in a space.',
+          'Tracks electricity usage, live load status, appliance consumption, and energy reports for smarter control.',
       sensors: [
-        'PIR motion sensor',
-        'Microwave motion sensor',
-        'mmWave presence sensor',
-        'Door sensor for entry detection',
+        'Current / power monitoring sensor',
+        'Smart energy meter',
+        'Voltage monitoring sensor',
+        'Load status sensor',
       ],
     ),
     _AutomationButtonData(
-      icon: Icons.settings_remote_outlined,
-      label: 'Proximity Sensing Automation',
-      supporting: 'Nearby presence-based actions',
+      icon: Icons.sensor_door_outlined,
+      label: 'Gate & Door Control',
+      supporting: 'Main gate, door lock, shutter',
       detail:
-          'Detects nearby users, tags, or devices to run entry, access, lighting, and welcome automations.',
+          'Controls gates, doors, shutters, and locks with motor control, access rules, and safety sensors.',
       sensors: [
-        'Bluetooth / BLE beacon',
-        'RFID / NFC reader',
-        'Ultrasonic proximity sensor',
-        'mmWave presence sensor',
-        'Wi-Fi / mobile presence detection',
+        'Motor controller',
+        'Limit switch sensor',
+        'Door / gate magnetic sensor',
+        'IR obstacle sensor',
+        'Remote / RF / Wi-Fi control module',
+      ],
+    ),
+    _AutomationButtonData(
+      icon: Icons.videocam_outlined,
+      label: 'Security & CCTV',
+      supporting: 'Camera, alerts, entry monitoring',
+      detail:
+          'Connects CCTV, entry sensors, sirens, and alerts so the app can monitor activity and security events.',
+      sensors: [
+        'CCTV camera',
+        'Door sensor',
+        'Motion / occupancy sensor',
+        'Siren / alarm module',
+        'Smart lock / access module',
+      ],
+    ),
+    _AutomationButtonData(
+      icon: Icons.local_fire_department_outlined,
+      label: 'Gas & Fire Detection',
+      supporting: 'Gas leak, smoke, fire alerts',
+      detail:
+          'Detects gas leaks, smoke, heat, or fire risk and triggers alerts, sirens, and safety automation.',
+      sensors: [
+        'Gas leak sensor',
+        'Smoke detector',
+        'Heat sensor',
+        'Fire alarm siren',
+        'Emergency relay cutoff',
       ],
     ),
   ];
@@ -3652,7 +3627,7 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
           child: Column(
             children: [
               Text(
-                'Smart Home Automation',
+                'Core Automation',
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -3664,7 +3639,7 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Connected controls, routines, and sensor-ready automation for smart spaces',
+                'Essential smart home controls for lighting, appliances, comfort, safety, access, and energy',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: const Color(0xFF52617F),
@@ -3970,10 +3945,474 @@ class _AutomationSensorDetailPanel extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: 18),
+          _AutomationCircuitVisual(item: item, color: color),
         ],
       ),
     );
   }
+}
+
+class _AutomationCircuitVisual extends StatelessWidget {
+  const _AutomationCircuitVisual({required this.item, required this.color});
+
+  final _AutomationButtonData item;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetPath = _circuitAssetPath(item.label);
+    if (assetPath != null) {
+      return _CircuitMockupImage(
+        color: color,
+        assetPath: assetPath,
+        semanticLabel: '${item.label} circuit connection mockup',
+      );
+    }
+
+    return _GeneratedCircuitPanel(item: item, color: color);
+  }
+}
+
+String? _circuitAssetPath(String label) {
+  return switch (label) {
+    'Smart Lighting' => 'assets/images/smart_lighting_circuit_mockup.png',
+    'Home Appliance Control' =>
+      'assets/images/home_appliance_circuit_mockup.png',
+    'Water Pump / Motor Control' =>
+      'assets/images/water_pump_motor_circuit_mockup.png',
+    'Energy Monitoring' => 'assets/images/energy_monitoring_circuit_mockup.png',
+    'Gate & Door Control' => 'assets/images/gate_door_circuit_mockup.png',
+    'Security & CCTV' => 'assets/images/security_cctv_circuit_mockup.png',
+    'Gas & Fire Detection' =>
+      'assets/images/gas_fire_detection_circuit_mockup.png',
+    _ => null,
+  };
+}
+
+class _CircuitMockupImage extends StatelessWidget {
+  const _CircuitMockupImage({
+    required this.color,
+    required this.assetPath,
+    required this.semanticLabel,
+  });
+
+  final Color color;
+  final String assetPath;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 700;
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 8 : 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FBFF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.14)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 3,
+              clipBehavior: Clip.none,
+              child: Image.asset(
+                assetPath,
+                width: double.infinity,
+                fit: compact ? BoxFit.fitWidth : BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                semanticLabel: semanticLabel,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _GeneratedCircuitPanel extends StatelessWidget {
+  const _GeneratedCircuitPanel({required this.item, required this.color});
+
+  final _AutomationButtonData item;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 760;
+        final nodeWidth =
+            compact ? constraints.maxWidth : (constraints.maxWidth - 48) / 3;
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 12 : 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FBFF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.14)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(item.icon, color: color, size: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${item.label} - Circuit Connection',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF0C1D4A),
+                        fontSize: 17,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              Text(
+                _circuitSubtitle(item.label),
+                style: const TextStyle(
+                  color: Color(0xFF52617F),
+                  fontSize: 12,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 18,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SizedBox(
+                    width: nodeWidth,
+                    child: _CircuitColumnCard(
+                      title: 'Inputs & Sensors',
+                      icon: Icons.sensors_rounded,
+                      color: color,
+                      items: item.sensors.take(4).toList(),
+                    ),
+                  ),
+                  compact
+                      ? _CircuitFlowDivider.vertical(color: color)
+                      : _CircuitFlowDivider.horizontal(color: color),
+                  SizedBox(
+                    width: nodeWidth,
+                    child: _CircuitColumnCard(
+                      title: 'Smart Controller',
+                      icon: Icons.memory_rounded,
+                      color: color,
+                      items: const [
+                        'ESP32 / Wi-Fi controller',
+                        'App rules and schedules',
+                        'Scene and device logic',
+                        'Low-voltage DC power',
+                      ],
+                    ),
+                  ),
+                  compact
+                      ? _CircuitFlowDivider.vertical(color: color)
+                      : _CircuitFlowDivider.horizontal(color: color),
+                  SizedBox(
+                    width: nodeWidth,
+                    child: _CircuitColumnCard(
+                      title: _outputTitle(item.label),
+                      icon: _outputIcon(item.label),
+                      color: color,
+                      items: _outputConnections(item.label),
+                      accentColor: const Color(0xFFFF5B20),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _CircuitLegend(color: color, label: item.label),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CircuitColumnCard extends StatelessWidget {
+  const _CircuitColumnCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.items,
+    this.accentColor,
+  });
+
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<String> items;
+  final Color? accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = accentColor ?? color;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 208),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: activeColor.withValues(alpha: 0.16)),
+        boxShadow: [
+          BoxShadow(
+            color: activeColor.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: activeColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, color: activeColor, size: 20),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF0C1D4A),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final entry in items) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.circle, color: activeColor, size: 6),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    entry,
+                    style: const TextStyle(
+                      color: Color(0xFF52617F),
+                      fontSize: 11.5,
+                      height: 1.28,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 7),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CircuitFlowDivider extends StatelessWidget {
+  const _CircuitFlowDivider.horizontal({required this.color})
+      : vertical = false;
+
+  const _CircuitFlowDivider.vertical({required this.color}) : vertical = true;
+
+  final Color color;
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    if (vertical) {
+      return SizedBox(
+        width: double.infinity,
+        height: 22,
+        child: Icon(Icons.keyboard_double_arrow_down_rounded,
+            color: color, size: 24),
+      );
+    }
+
+    return SizedBox(
+      width: 24,
+      height: 208,
+      child: Center(
+        child: Icon(Icons.arrow_forward_rounded, color: color, size: 24),
+      ),
+    );
+  }
+}
+
+class _CircuitLegend extends StatelessWidget {
+  const _CircuitLegend({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFCF73)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: Color(0xFFF59E0B), size: 21),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              _safetyNote(label),
+              style: const TextStyle(
+                color: Color(0xFF31476E),
+                fontSize: 11.5,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _circuitSubtitle(String label) {
+  return switch (label) {
+    'Water Pump / Motor Control' =>
+      'Tank and flow sensors protect the pump while the controller operates a relay or contactor for the motor.',
+    'AC & Heating Control' =>
+      'Temperature and humidity sensors guide the controller to operate AC, heater, thermostat, and comfort modes.',
+    'Energy Monitoring' =>
+      'Current and voltage sensors report live consumption to the controller for dashboards, alerts, and usage reports.',
+    'Gate & Door Control' =>
+      'Limit, magnetic, and obstacle sensors report position while the controller drives gate, shutter, or lock modules.',
+    'Security & CCTV' =>
+      'Cameras and security sensors send events to the controller, which triggers alerts, sirens, locks, and app monitoring.',
+    'Gas & Fire Detection' =>
+      'Gas, smoke, and heat sensors send safety events to the controller, which triggers sirens, alerts, and cutoff relays.',
+    _ =>
+      'Sensors send low-voltage signals to the controller, which drives the connected automation output.',
+  };
+}
+
+String _outputTitle(String label) {
+  return switch (label) {
+    'Water Pump / Motor Control' => 'Pump Control',
+    'AC & Heating Control' => 'Climate Output',
+    'Energy Monitoring' => 'Energy Dashboard',
+    'Gate & Door Control' => 'Gate / Door Output',
+    'Security & CCTV' => 'Security Actions',
+    'Gas & Fire Detection' => 'Safety Actions',
+    _ => 'Output Control',
+  };
+}
+
+IconData _outputIcon(String label) {
+  return switch (label) {
+    'Water Pump / Motor Control' => Icons.water_drop_outlined,
+    'AC & Heating Control' => Icons.ac_unit_rounded,
+    'Energy Monitoring' => Icons.bar_chart_rounded,
+    'Gate & Door Control' => Icons.sensor_door_outlined,
+    'Security & CCTV' => Icons.videocam_outlined,
+    'Gas & Fire Detection' => Icons.local_fire_department_outlined,
+    _ => Icons.output_rounded,
+  };
+}
+
+List<String> _outputConnections(String label) {
+  return switch (label) {
+    'Water Pump / Motor Control' => const [
+        'Relay / contactor module',
+        'Pump motor output',
+        'Dry-run safety cutoff',
+        'Tank level auto stop',
+      ],
+    'AC & Heating Control' => const [
+        'IR blaster or thermostat output',
+        'AC / heater relay control',
+        'Comfort mode automation',
+        'Energy-aware scheduling',
+      ],
+    'Energy Monitoring' => const [
+        'Live energy dashboard',
+        'Usage report and alerts',
+        'Overload warning',
+        'Device consumption status',
+      ],
+    'Gate & Door Control' => const [
+        'Motor driver / controller',
+        'Open and close relay outputs',
+        'Limit switch stop signal',
+        'Obstacle safety cutoff',
+      ],
+    'Security & CCTV' => const [
+        'CCTV live view / recording',
+        'Siren and alert output',
+        'Door / lock action',
+        'Mobile security notification',
+      ],
+    'Gas & Fire Detection' => const [
+        'Fire alarm siren',
+        'Gas leak alert',
+        'Emergency relay cutoff',
+        'Mobile safety notification',
+      ],
+    _ => const [
+        'Relay / controller output',
+        'Connected device load',
+        'App and manual control',
+        'Safety cutoff path',
+      ],
+  };
+}
+
+String _safetyNote(String label) {
+  final load = switch (label) {
+    'Gate & Door Control' => 'gate or door motor controller',
+    'Water Pump / Motor Control' => 'pump contactor',
+    'AC & Heating Control' => 'AC, heater, or thermostat controller',
+    'Energy Monitoring' => 'metering module and reporting dashboard',
+    'Security & CCTV' => 'camera, siren, or access module',
+    'Gas & Fire Detection' => 'alarm siren or emergency cutoff relay',
+    _ => 'relay or control module',
+  };
+  return 'Connection flow: low-voltage sensors -> smart controller -> $load -> device/load. Keep controller wiring isolated from AC mains; final high-voltage wiring should be done by a qualified electrician.';
 }
 
 class _SensorChip extends StatelessWidget {
@@ -4064,6 +4503,12 @@ String _sensorDescription(String sensor) {
       'Tracks electricity use and confirms whether a device is running.',
     'Power monitoring sensor' =>
       'Measures energy use for schedules, reports, and safety checks.',
+    'Smart energy meter' =>
+      'Measures total energy consumption for reports and dashboards.',
+    'Voltage monitoring sensor' =>
+      'Tracks voltage level for power quality and safety alerts.',
+    'Load status sensor' =>
+      'Confirms whether a connected load is active or idle.',
     'Door sensor' => 'Detects whether a door or window is open or closed.',
     'Door sensor for entry detection' =>
       'Confirms entry or exit when a door opens.',
@@ -4077,6 +4522,20 @@ String _sensorDescription(String sensor) {
       'Drives and controls curtain, gate, or shutter motors.',
     'Remote / RF / Wi-Fi control module' =>
       'Adds remote, wireless, or app-based control to motorized devices.',
+    'CCTV camera' =>
+      'Provides live video, recording, or event-based security monitoring.',
+    'Siren / alarm module' =>
+      'Sounds an alarm when a security or safety event is detected.',
+    'Smart lock / access module' =>
+      'Controls door lock or access permissions from automation rules.',
+    'Gas leak sensor' =>
+      'Detects LPG or gas leakage and triggers safety alerts.',
+    'Smoke detector' => 'Detects smoke for early fire warning.',
+    'Heat sensor' => 'Detects unusual heat rise or fire risk.',
+    'Fire alarm siren' =>
+      'Sounds an emergency alarm during fire or gas safety events.',
+    'Emergency relay cutoff' =>
+      'Cuts a connected circuit during a configured safety emergency.',
     'Fan / AC relay controller' =>
       'Switches fans or AC circuits based on climate rules.',
     'Water level sensor' => 'Measures tank water level.',
@@ -4191,9 +4650,9 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
       ],
     ),
     _EstimateOptionData(
-      id: 'fan',
+      id: 'appliance',
       icon: Icons.mode_fan_off_outlined,
-      title: 'Fan & Appliance',
+      title: 'Home Appliance',
       unitLabel: 'appliance points',
       defaultRoom: 'Bedroom',
       defaultPrice: 1500,
@@ -4206,23 +4665,23 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
       ],
     ),
     _EstimateOptionData(
-      id: 'room',
-      icon: Icons.home_outlined,
-      title: 'Room-Wise Automation',
-      unitLabel: 'rooms',
-      defaultRoom: 'Full Home',
-      defaultPrice: 3500,
+      id: 'ac_heating',
+      icon: Icons.ac_unit_rounded,
+      title: 'AC & Heating',
+      unitLabel: 'comfort points',
+      defaultRoom: 'Bedroom',
+      defaultPrice: 2500,
       included: [
-        'Room-wise device grouping',
-        'Occupancy sensor optional',
-        'Scene and schedule setup',
+        'Temperature sensor',
+        'IR blaster or thermostat module',
+        'AC / heater relay optional',
         'Mobile and web app control',
       ],
     ),
     _EstimateOptionData(
       id: 'pump',
       icon: Icons.water_drop_outlined,
-      title: 'Water Pump',
+      title: 'Water Pump / Motor',
       unitLabel: 'pumps',
       defaultRoom: 'Utility',
       defaultPrice: 3500,
@@ -4234,25 +4693,25 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
       ],
     ),
     _EstimateOptionData(
-      id: 'climate',
-      icon: Icons.device_thermostat_rounded,
-      title: 'Climate Control',
-      unitLabel: 'AC / climate points',
-      defaultRoom: 'Bedroom',
+      id: 'energy',
+      icon: Icons.bar_chart_rounded,
+      title: 'Energy Monitoring',
+      unitLabel: 'meter points',
+      defaultRoom: 'Main DB',
       defaultPrice: 2500,
       included: [
-        'Temperature sensor',
-        'Humidity sensor optional',
-        'IR blaster or thermostat module',
-        'Mobile and web app control',
+        'Smart energy meter',
+        'Current / power monitoring',
+        'Usage dashboard',
+        'Alerts and reports',
       ],
     ),
     _EstimateOptionData(
-      id: 'curtain',
-      icon: Icons.curtains_outlined,
-      title: 'Curtain & Gate',
-      unitLabel: 'motor points',
-      defaultRoom: 'Lobby',
+      id: 'gate',
+      icon: Icons.sensor_door_outlined,
+      title: 'Gate & Door',
+      unitLabel: 'gate / door points',
+      defaultRoom: 'Entrance',
       defaultPrice: 4500,
       included: [
         'Motor controller',
@@ -4262,17 +4721,31 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
       ],
     ),
     _EstimateOptionData(
-      id: 'presence',
-      icon: Icons.sensors_rounded,
-      title: 'Motion / Proximity',
-      unitLabel: 'sensor points',
-      defaultRoom: 'Lobby',
-      defaultPrice: 900,
+      id: 'security',
+      icon: Icons.videocam_outlined,
+      title: 'Security & CCTV',
+      unitLabel: 'security points',
+      defaultRoom: 'Entrance',
+      defaultPrice: 3000,
       included: [
-        'PIR / mmWave sensor option',
-        'Door sensor optional',
-        'Presence-based automation rule',
-        'Mobile and web app alerts',
+        'CCTV camera integration',
+        'Door / motion sensor',
+        'Siren or alert module',
+        'Mobile security alerts',
+      ],
+    ),
+    _EstimateOptionData(
+      id: 'gas_fire',
+      icon: Icons.local_fire_department_outlined,
+      title: 'Gas & Fire Detection',
+      unitLabel: 'safety points',
+      defaultRoom: 'Kitchen',
+      defaultPrice: 2200,
+      included: [
+        'Gas leak sensor',
+        'Smoke / heat detector',
+        'Fire alarm siren',
+        'Emergency alert setup',
       ],
     ),
     _EstimateOptionData(
@@ -5638,8 +6111,6 @@ List<_FacilityAutomationRowData> _facilityAutomationRows() {
         _AutomationButtonData(
             icon: Icons.lock_open_rounded, label: 'Smart Door Access'),
         _AutomationButtonData(
-            icon: Icons.light_mode_outlined, label: 'Lobby Lighting'),
-        _AutomationButtonData(
             icon: Icons.plumbing_rounded, label: 'Water Pump'),
         _AutomationButtonData(
             icon: Icons.directions_run_rounded, label: 'Corridor Motion'),
@@ -6161,16 +6632,13 @@ class _ImageHotspotButtonState extends State<_ImageHotspotButton> {
 
 List<_AutomationHotspot> _smartHomeAutomationHotspots() {
   const labels = [
-    'Smart Lighting Control',
-    'Fan & Appliance Control',
-    'Room-Wise Automation',
-    'Scenes & Modes',
-    'Schedule-Based Automation',
-    'Curtain & Gate Automation',
-    'Climate Control',
-    'Water Motor / Pump Automation',
-    'Motion Sensing Automation',
-    'Proximity Sensing Automation',
+    'Smart Lighting',
+    'Home Appliance Control',
+    'Water Pump / Motor Control',
+    'Energy Monitoring',
+    'Gate & Door Control',
+    'Security & CCTV',
+    'Gas & Fire Detection',
   ];
 
   return [
@@ -6190,7 +6658,6 @@ List<_AutomationHotspot> _facilityAutomationHotspots() {
     [
       'Hotel / Lodge - Room Lighting / AC',
       'Hotel / Lodge - Smart Door Access',
-      'Hotel / Lodge - Lobby Lighting',
       'Hotel / Lodge - Water Pump Automation',
       'Hotel / Lodge - Corridor Motion Lighting',
       'Hotel / Lodge - Guest Room Energy Saving',
