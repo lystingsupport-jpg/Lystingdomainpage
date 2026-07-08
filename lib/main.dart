@@ -2236,6 +2236,385 @@ class _DetailTopBar extends StatelessWidget {
   }
 }
 
+class _CommercialAutomationBlankSection extends StatelessWidget {
+  const _CommercialAutomationBlankSection({
+    required this.facility,
+    required this.item,
+    required this.color,
+    required this.onBack,
+    required this.onItemSelected,
+  });
+
+  final _FacilityAutomationRowData facility;
+  final _AutomationButtonData item;
+  final Color color;
+  final VoidCallback onBack;
+  final ValueChanged<_AutomationButtonData> onItemSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
+    return Container(
+      width: double.infinity,
+      constraints: BoxConstraints(minHeight: compact ? 440 : 620),
+      padding: EdgeInsets.all(compact ? 18 : 26),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.94)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconButton.filledTonal(
+                tooltip: 'Back to commercial list',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                width: compact ? 42 : 50,
+                height: compact ? 42 : 50,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child:
+                    Icon(facility.icon, color: color, size: compact ? 24 : 28),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFF0C1D4A),
+                        fontSize: compact ? 20 : 26,
+                        fontWeight: FontWeight.w900,
+                        height: 1.08,
+                      ),
+                    ),
+                    Text(
+                      facility.facility,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: compact ? 11 : 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: compact ? 18 : 24),
+          Container(
+            width: double.infinity,
+            constraints: BoxConstraints(minHeight: compact ? 300 : 470),
+            padding: EdgeInsets.all(compact ? 14 : 20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FBFF),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFDCE8FF)),
+            ),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: compact ? 10 : 14,
+                    runSpacing: compact ? 10 : 14,
+                    children: [
+                      for (final hotelItem in facility.items)
+                        _AutomationElevatedButton(
+                          item: hotelItem,
+                          color: color,
+                          compact: true,
+                          selected: hotelItem.label == item.label,
+                          onTap: () => onItemSelected(hotelItem),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: compact ? 16 : 22),
+                  _CommercialAutomationTileImage(
+                    facility: facility,
+                    item: item,
+                    color: color,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommercialAutomationTileImage extends StatelessWidget {
+  const _CommercialAutomationTileImage({
+    required this.facility,
+    required this.item,
+    required this.color,
+  });
+
+  final _FacilityAutomationRowData facility;
+  final _AutomationButtonData item;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetPath = _commercialMockupAssetPath(facility.facility, item.label);
+    if (assetPath == null) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 700;
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 8 : 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: color.withValues(alpha: 0.14)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 9),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 3,
+              clipBehavior: Clip.none,
+              child: Image.asset(
+                assetPath,
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+                filterQuality: FilterQuality.high,
+                semanticLabel: '${item.label} hotel automation diagram',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+String? _commercialMockupAssetPath(String facility, String label) {
+  if (facility == 'Hotel / Lodge') {
+    return switch (label) {
+      'Room Lighting / AC' =>
+        'assets/images/hotel_lodge_room_lighting_ac_mockup.png',
+      'Smart Door Access' =>
+        'assets/images/hotel_lodge_smart_door_access_mockup.png',
+      'Water Pump' => 'assets/images/hotel_lodge_water_pump_mockup.png',
+      'Corridor Motion' =>
+        'assets/images/hotel_lodge_corridor_motion_mockup.png',
+      'Energy Saving' => 'assets/images/hotel_lodge_energy_saving_mockup.png',
+      'Fire / Smoke' => 'assets/images/hotel_lodge_fire_smoke_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'School / College') {
+    return switch (label) {
+      'Classroom Lights' =>
+        'assets/images/school_college_classroom_lights_mockup.png',
+      'Lab Safety' => 'assets/images/school_college_lab_safety_mockup.png',
+      'Attendance' => 'assets/images/school_college_attendance_mockup.png',
+      'Corridor Lights' =>
+        'assets/images/school_college_corridor_lights_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Warehouse / Godown') {
+    return switch (label) {
+      'Loading Lights' =>
+        'assets/images/warehouse_godown_loading_lights_mockup.png',
+      'Stock Access' =>
+        'assets/images/warehouse_godown_stock_access_mockup.png',
+      'Fire / Smoke' => 'assets/images/warehouse_godown_fire_smoke_mockup.png',
+      'After-Hours' => 'assets/images/warehouse_godown_after_hours_mockup.png',
+      'Door Monitor' =>
+        'assets/images/warehouse_godown_door_monitor_mockup.png',
+      'Energy' => 'assets/images/warehouse_godown_energy_mockup.png',
+      'Ventilation' => 'assets/images/warehouse_godown_ventilation_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Gym / Fitness Center') {
+    return switch (label) {
+      'AC Schedule' => 'assets/images/gym_fitness_ac_schedule_mockup.png',
+      'Access' => 'assets/images/gym_fitness_access_mockup.png',
+      'Equipment Power' =>
+        'assets/images/gym_fitness_equipment_power_mockup.png',
+      'Lighting Scenes' =>
+        'assets/images/gym_fitness_lighting_scenes_mockup.png',
+      'Music / Display' => 'assets/images/gym_fitness_music_display_mockup.png',
+      'Locker Monitor' => 'assets/images/gym_fitness_locker_monitor_mockup.png',
+      'Energy' => 'assets/images/gym_fitness_energy_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Salon / Spa') {
+    return switch (label) {
+      'Lighting Scenes' => 'assets/images/salon_spa_lighting_scenes_mockup.png',
+      'AC Schedule' => 'assets/images/salon_spa_ac_schedule_mockup.png',
+      'Water Heater' => 'assets/images/salon_spa_water_heater_mockup.png',
+      'Waiting Comfort' => 'assets/images/salon_spa_waiting_comfort_mockup.png',
+      'Staff Access' => 'assets/images/salon_spa_staff_access_mockup.png',
+      'Security' => 'assets/images/salon_spa_security_mockup.png',
+      'Fire / Smoke' => 'assets/images/salon_spa_fire_smoke_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Bank / Finance Office') {
+    return switch (label) {
+      'Strong Access' => 'assets/images/bank_finance_strong_access_mockup.png',
+      'Server Room' => 'assets/images/bank_finance_server_room_mockup.png',
+      'UPS Power' => 'assets/images/bank_finance_ups_power_mockup.png',
+      'Fire / Smoke' => 'assets/images/bank_finance_fire_smoke_mockup.png',
+      'After-Hours' => 'assets/images/bank_finance_after_hours_mockup.png',
+      'AC Schedule' => 'assets/images/bank_finance_ac_schedule_mockup.png',
+      'Energy' => 'assets/images/bank_finance_energy_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Pharmacy / Medical Store') {
+    return switch (label) {
+      'Fridge Monitor' =>
+        'assets/images/pharmacy_medical_fridge_monitor_mockup.png',
+      'Backup Alerts' =>
+        'assets/images/pharmacy_medical_backup_alerts_mockup.png',
+      'Security' => 'assets/images/pharmacy_medical_security_mockup.png',
+      'Lighting' => 'assets/images/pharmacy_medical_lighting_mockup.png',
+      'AC Schedule' => 'assets/images/pharmacy_medical_ac_schedule_mockup.png',
+      'Fire / Smoke' => 'assets/images/pharmacy_medical_fire_smoke_mockup.png',
+      'Storage Access' =>
+        'assets/images/pharmacy_medical_storage_access_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Supermarket / Grocery') {
+    return switch (label) {
+      'Cold Storage' =>
+        'assets/images/supermarket_grocery_cold_storage_mockup.png',
+      'Display Lighting' =>
+        'assets/images/supermarket_grocery_display_lighting_mockup.png',
+      'Counter Power' =>
+        'assets/images/supermarket_grocery_counter_power_mockup.png',
+      'AC Schedule' =>
+        'assets/images/supermarket_grocery_ac_schedule_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Factory / Small Workshop') {
+    return switch (label) {
+      'Machine Power' =>
+        'assets/images/factory_small_workshop_machine_power_mockup.png',
+      'Exhaust' => 'assets/images/factory_small_workshop_exhaust_mockup.png',
+      'Worker Safety' =>
+        'assets/images/factory_small_workshop_worker_safety_mockup.png',
+      'Fire / Smoke' =>
+        'assets/images/factory_small_workshop_fire_smoke_mockup.png',
+      'Area Access' =>
+        'assets/images/factory_small_workshop_area_access_mockup.png',
+      'Energy' => 'assets/images/factory_small_workshop_energy_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Co-working Space') {
+    return switch (label) {
+      'Meeting Room' => 'assets/images/co_working_meeting_room_mockup.png',
+      'Access' => 'assets/images/co_working_access_mockup.png',
+      'AC Schedule' => 'assets/images/co_working_ac_schedule_mockup.png',
+      'Occupancy' => 'assets/images/co_working_occupancy_mockup.png',
+      'Visitor Access' => 'assets/images/co_working_visitor_access_mockup.png',
+      'Energy' => 'assets/images/co_working_energy_mockup.png',
+      'Pantry Safety' => 'assets/images/co_working_pantry_safety_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Temple / Church / Prayer Hall') {
+    return switch (label) {
+      'Prayer Lights' =>
+        'assets/images/temple_prayer_hall_prayer_lights_mockup.png',
+      'Donation Box' =>
+        'assets/images/temple_prayer_hall_donation_box_mockup.png',
+      'Pathway Lights' =>
+        'assets/images/temple_prayer_hall_pathway_lights_mockup.png',
+      'Security' => 'assets/images/temple_prayer_hall_security_mockup.png',
+      'Fire / Smoke' =>
+        'assets/images/temple_prayer_hall_fire_smoke_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Petrol Pump / EV Charging Point') {
+    return switch (label) {
+      'Gas / Fire' => 'assets/images/petrol_ev_gas_fire_mockup.png',
+      'Forecourt Lights' =>
+        'assets/images/petrol_ev_forecourt_lights_mockup.png',
+      'Equipment' => 'assets/images/petrol_ev_equipment_mockup.png',
+      'Load Monitor' => 'assets/images/petrol_ev_load_monitor_mockup.png',
+      'Restricted Access' =>
+        'assets/images/petrol_ev_restricted_access_mockup.png',
+      'Security' => 'assets/images/petrol_ev_security_mockup.png',
+      'Emergency Alert' => 'assets/images/petrol_ev_emergency_alert_mockup.png',
+      _ => null,
+    };
+  }
+
+  if (facility == 'Farmhouse / Resort') {
+    return switch (label) {
+      'Outdoor Lights' =>
+        'assets/images/farmhouse_resort_outdoor_lights_mockup.png',
+      'Gate Control' =>
+        'assets/images/farmhouse_resort_gate_control_mockup.png',
+      'Pump Control' =>
+        'assets/images/farmhouse_resort_pump_control_mockup.png',
+      'Irrigation' => 'assets/images/farmhouse_resort_irrigation_mockup.png',
+      'Room AC' => 'assets/images/farmhouse_resort_room_ac_mockup.png',
+      'Security' => 'assets/images/farmhouse_resort_security_mockup.png',
+      'Energy' => 'assets/images/farmhouse_resort_energy_mockup.png',
+      _ => null,
+    };
+  }
+
+  return null;
+}
+
 class _CategoryDock extends StatelessWidget {
   const _CategoryDock({
     required this.selectedCategory,
@@ -3023,6 +3402,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
   late final PageController _controller;
   int _currentPage = 0;
   int _selectedAutomationIndex = 0;
+  _SelectedCommercialAutomation? _selectedCommercialItem;
 
   static const _items = [
     _AutomationCarouselItem(
@@ -3125,6 +3505,9 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                     setState(() {
                       _currentPage = index;
                       _selectedAutomationIndex = index;
+                      if (index == 0) {
+                        _selectedCommercialItem = null;
+                      }
                     });
                   },
                   itemBuilder: (context, index) {
@@ -3149,6 +3532,9 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                           setState(() {
                             _currentPage = index;
                             _selectedAutomationIndex = index;
+                            if (index == 0) {
+                              _selectedCommercialItem = null;
+                            }
                           });
                           _goTo(index);
                         },
@@ -3180,6 +3566,18 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
               _AutomationImagePanel(
                 color: widget.color,
                 assetPath: _assetForAutomationIndex(_selectedAutomationIndex),
+                selectedCommercialItem: _selectedCommercialItem,
+                onCommercialItemSelected: (facility, item) {
+                  setState(() {
+                    _selectedCommercialItem = _SelectedCommercialAutomation(
+                      facility: facility,
+                      item: item,
+                    );
+                  });
+                },
+                onCommercialBack: () {
+                  setState(() => _selectedCommercialItem = null);
+                },
               ),
             ],
           ),
@@ -3324,10 +3722,19 @@ class _AutomationImagePanel extends StatelessWidget {
   const _AutomationImagePanel({
     required this.color,
     required this.assetPath,
+    required this.selectedCommercialItem,
+    required this.onCommercialItemSelected,
+    required this.onCommercialBack,
   });
 
   final Color color;
   final String assetPath;
+  final _SelectedCommercialAutomation? selectedCommercialItem;
+  final void Function(
+    _FacilityAutomationRowData facility,
+    _AutomationButtonData item,
+  ) onCommercialItemSelected;
+  final VoidCallback onCommercialBack;
 
   @override
   Widget build(BuildContext context) {
@@ -3351,6 +3758,9 @@ class _AutomationImagePanel extends StatelessWidget {
         child: _NativeAutomationTable(
           showFacilities: assetPath.contains('facility_automation'),
           color: color,
+          selectedCommercialItem: selectedCommercialItem,
+          onCommercialItemSelected: onCommercialItemSelected,
+          onCommercialBack: onCommercialBack,
         ),
       ),
     );
@@ -3361,36 +3771,74 @@ class _NativeAutomationTable extends StatelessWidget {
   const _NativeAutomationTable({
     required this.showFacilities,
     required this.color,
+    required this.selectedCommercialItem,
+    required this.onCommercialItemSelected,
+    required this.onCommercialBack,
   });
 
   final bool showFacilities;
   final Color color;
+  final _SelectedCommercialAutomation? selectedCommercialItem;
+  final void Function(
+    _FacilityAutomationRowData facility,
+    _AutomationButtonData item,
+  ) onCommercialItemSelected;
+  final VoidCallback onCommercialBack;
 
   @override
   Widget build(BuildContext context) {
-    return showFacilities
-        ? Column(
-            children: [
-              _FacilityAutomationTable(color: color),
-              const SizedBox(height: 16),
-              _AutomationEstimatorCard(
-                key: const ValueKey('commercial-estimator'),
-                color: color,
-                commercial: true,
-              ),
-            ],
-          )
-        : Column(
-            children: [
-              _SmartHomeNativeTable(color: color),
-              const SizedBox(height: 16),
-              _AutomationEstimatorCard(
-                key: const ValueKey('home-estimator'),
-                color: color,
-              ),
-            ],
-          );
+    if (showFacilities) {
+      final selected = selectedCommercialItem;
+      if (selected != null) {
+        return _CommercialAutomationBlankSection(
+          facility: selected.facility,
+          item: selected.item,
+          color: color,
+          onBack: onCommercialBack,
+          onItemSelected: (item) => onCommercialItemSelected(
+            selected.facility,
+            item,
+          ),
+        );
+      }
+
+      return Column(
+        children: [
+          _FacilityAutomationTable(
+            color: color,
+            onItemSelected: onCommercialItemSelected,
+          ),
+          const SizedBox(height: 16),
+          _AutomationEstimatorCard(
+            key: const ValueKey('commercial-estimator'),
+            color: color,
+            commercial: true,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        _SmartHomeNativeTable(color: color),
+        const SizedBox(height: 16),
+        _AutomationEstimatorCard(
+          key: const ValueKey('home-estimator'),
+          color: color,
+        ),
+      ],
+    );
   }
+}
+
+class _SelectedCommercialAutomation {
+  const _SelectedCommercialAutomation({
+    required this.facility,
+    required this.item,
+  });
+
+  final _FacilityAutomationRowData facility;
+  final _AutomationButtonData item;
 }
 
 class _AutomationButtonData {
@@ -3425,12 +3873,16 @@ class _AutomationElevatedButton extends StatelessWidget {
   const _AutomationElevatedButton({
     required this.item,
     required this.color,
+    required this.onTap,
     this.compact = false,
+    this.selected = false,
   });
 
   final _AutomationButtonData item;
   final Color color;
+  final VoidCallback onTap;
   final bool compact;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -3442,9 +3894,7 @@ class _AutomationElevatedButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            debugPrint('Automation selected: ${item.label}');
-          },
+          onTap: onTap,
           child: Ink(
             width: compact ? 92 : null,
             padding: EdgeInsets.symmetric(
@@ -3452,14 +3902,17 @@ class _AutomationElevatedButton extends StatelessWidget {
               vertical: compact ? 9 : 10,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: selected ? color.withValues(alpha: 0.1) : Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withValues(alpha: 0.12)),
+              border: Border.all(
+                color: color.withValues(alpha: selected ? 0.42 : 0.12),
+                width: selected ? 1.5 : 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+                  color: color.withValues(alpha: selected ? 0.14 : 0.08),
+                  blurRadius: selected ? 16 : 12,
+                  offset: Offset(0, selected ? 8 : 6),
                 ),
               ],
             ),
@@ -3627,7 +4080,7 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
           child: Column(
             children: [
               Text(
-                'Core Automation',
+                'Smart Home Automation',
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -3635,15 +4088,6 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
                   color: const Color(0xFF0C1D4A),
                   fontSize: tight ? 20 : 28,
                   fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Essential smart home controls for lighting, appliances, comfort, safety, access, and energy',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: const Color(0xFF52617F),
-                  fontSize: tight ? 11 : 13,
                 ),
               ),
               SizedBox(height: tight ? 10 : 18),
@@ -3919,94 +4363,29 @@ class _AutomationSensorDetailPanel extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 18),
-          const Text(
-            'Sensors / Devices Used',
-            style: TextStyle(
-              color: Color(0xFF0C1D4A),
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 760 ? 2 : 1;
-              return Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: item.sensors
-                    .map(
-                      (sensor) => SizedBox(
-                        width: _gridWidth(constraints.maxWidth, columns, 10),
-                        child: _SensorChip(label: sensor, color: color),
-                      ),
-                    )
-                    .toList(),
-              );
-            },
-          ),
-          const SizedBox(height: 18),
-          _AutomationCircuitVisual(item: item, color: color),
+          _AutomationMockupImage(item: item, color: color),
         ],
       ),
     );
   }
 }
 
-class _AutomationCircuitVisual extends StatelessWidget {
-  const _AutomationCircuitVisual({required this.item, required this.color});
+class _AutomationMockupImage extends StatelessWidget {
+  const _AutomationMockupImage({required this.item, required this.color});
 
   final _AutomationButtonData item;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final assetPath = _circuitAssetPath(item.label);
-    if (assetPath != null) {
-      return _CircuitMockupImage(
-        color: color,
-        assetPath: assetPath,
-        semanticLabel: '${item.label} circuit connection mockup',
-      );
+    final assetPath = _automationMockupAssetPath(item.label);
+    if (assetPath == null) {
+      return const SizedBox.shrink();
     }
 
-    return _GeneratedCircuitPanel(item: item, color: color);
-  }
-}
-
-String? _circuitAssetPath(String label) {
-  return switch (label) {
-    'Smart Lighting' => 'assets/images/smart_lighting_circuit_mockup.png',
-    'Home Appliance Control' =>
-      'assets/images/home_appliance_circuit_mockup.png',
-    'Water Pump / Motor Control' =>
-      'assets/images/water_pump_motor_circuit_mockup.png',
-    'Energy Monitoring' => 'assets/images/energy_monitoring_circuit_mockup.png',
-    'Gate & Door Control' => 'assets/images/gate_door_circuit_mockup.png',
-    'Security & CCTV' => 'assets/images/security_cctv_circuit_mockup.png',
-    'Gas & Fire Detection' =>
-      'assets/images/gas_fire_detection_circuit_mockup.png',
-    _ => null,
-  };
-}
-
-class _CircuitMockupImage extends StatelessWidget {
-  const _CircuitMockupImage({
-    required this.color,
-    required this.assetPath,
-    required this.semanticLabel,
-  });
-
-  final Color color;
-  final String assetPath;
-  final String semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 700;
-
         return Container(
           width: double.infinity,
           padding: EdgeInsets.all(compact ? 8 : 12),
@@ -4026,7 +4405,7 @@ class _CircuitMockupImage extends StatelessWidget {
                 width: double.infinity,
                 fit: compact ? BoxFit.fitWidth : BoxFit.contain,
                 filterQuality: FilterQuality.high,
-                semanticLabel: semanticLabel,
+                semanticLabel: '${item.label} UI mockup',
               ),
             ),
           ),
@@ -4036,528 +4415,20 @@ class _CircuitMockupImage extends StatelessWidget {
   }
 }
 
-class _GeneratedCircuitPanel extends StatelessWidget {
-  const _GeneratedCircuitPanel({required this.item, required this.color});
-
-  final _AutomationButtonData item;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 760;
-        final nodeWidth =
-            compact ? constraints.maxWidth : (constraints.maxWidth - 48) / 3;
-
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(compact ? 12 : 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FBFF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.14)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(item.icon, color: color, size: 22),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '${item.label} - Circuit Connection',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF0C1D4A),
-                        fontSize: 17,
-                        height: 1.15,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 7),
-              Text(
-                _circuitSubtitle(item.label),
-                style: const TextStyle(
-                  color: Color(0xFF52617F),
-                  fontSize: 12,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 18,
-                runSpacing: 12,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  SizedBox(
-                    width: nodeWidth,
-                    child: _CircuitColumnCard(
-                      title: 'Inputs & Sensors',
-                      icon: Icons.sensors_rounded,
-                      color: color,
-                      items: item.sensors.take(4).toList(),
-                    ),
-                  ),
-                  compact
-                      ? _CircuitFlowDivider.vertical(color: color)
-                      : _CircuitFlowDivider.horizontal(color: color),
-                  SizedBox(
-                    width: nodeWidth,
-                    child: _CircuitColumnCard(
-                      title: 'Smart Controller',
-                      icon: Icons.memory_rounded,
-                      color: color,
-                      items: const [
-                        'ESP32 / Wi-Fi controller',
-                        'App rules and schedules',
-                        'Scene and device logic',
-                        'Low-voltage DC power',
-                      ],
-                    ),
-                  ),
-                  compact
-                      ? _CircuitFlowDivider.vertical(color: color)
-                      : _CircuitFlowDivider.horizontal(color: color),
-                  SizedBox(
-                    width: nodeWidth,
-                    child: _CircuitColumnCard(
-                      title: _outputTitle(item.label),
-                      icon: _outputIcon(item.label),
-                      color: color,
-                      items: _outputConnections(item.label),
-                      accentColor: const Color(0xFFFF5B20),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _CircuitLegend(color: color, label: item.label),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _CircuitColumnCard extends StatelessWidget {
-  const _CircuitColumnCard({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.items,
-    this.accentColor,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color color;
-  final List<String> items;
-  final Color? accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final activeColor = accentColor ?? color;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 208),
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: activeColor.withValues(alpha: 0.16)),
-        boxShadow: [
-          BoxShadow(
-            color: activeColor.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: activeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(icon, color: activeColor, size: 20),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF0C1D4A),
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          for (final entry in items) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.circle, color: activeColor, size: 6),
-                const SizedBox(width: 7),
-                Expanded(
-                  child: Text(
-                    entry,
-                    style: const TextStyle(
-                      color: Color(0xFF52617F),
-                      fontSize: 11.5,
-                      height: 1.28,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 7),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _CircuitFlowDivider extends StatelessWidget {
-  const _CircuitFlowDivider.horizontal({required this.color})
-      : vertical = false;
-
-  const _CircuitFlowDivider.vertical({required this.color}) : vertical = true;
-
-  final Color color;
-  final bool vertical;
-
-  @override
-  Widget build(BuildContext context) {
-    if (vertical) {
-      return SizedBox(
-        width: double.infinity,
-        height: 22,
-        child: Icon(Icons.keyboard_double_arrow_down_rounded,
-            color: color, size: 24),
-      );
-    }
-
-    return SizedBox(
-      width: 24,
-      height: 208,
-      child: Center(
-        child: Icon(Icons.arrow_forward_rounded, color: color, size: 24),
-      ),
-    );
-  }
-}
-
-class _CircuitLegend extends StatelessWidget {
-  const _CircuitLegend({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E6),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFCF73)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: Color(0xFFF59E0B), size: 21),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Text(
-              _safetyNote(label),
-              style: const TextStyle(
-                color: Color(0xFF31476E),
-                fontSize: 11.5,
-                height: 1.35,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _circuitSubtitle(String label) {
+String? _automationMockupAssetPath(String label) {
   return switch (label) {
+    'Smart Lighting' => 'assets/images/smart_lighting_circuit_mockup.png',
+    'Home Appliance Control' =>
+      'assets/images/home_appliance_circuit_mockup.png',
+    'AC & Heating Control' => 'assets/images/ac_heating_circuit_mockup.png',
     'Water Pump / Motor Control' =>
-      'Tank and flow sensors protect the pump while the controller operates a relay or contactor for the motor.',
-    'AC & Heating Control' =>
-      'Temperature and humidity sensors guide the controller to operate AC, heater, thermostat, and comfort modes.',
-    'Energy Monitoring' =>
-      'Current and voltage sensors report live consumption to the controller for dashboards, alerts, and usage reports.',
-    'Gate & Door Control' =>
-      'Limit, magnetic, and obstacle sensors report position while the controller drives gate, shutter, or lock modules.',
-    'Security & CCTV' =>
-      'Cameras and security sensors send events to the controller, which triggers alerts, sirens, locks, and app monitoring.',
+      'assets/images/water_pump_motor_circuit_mockup.png',
+    'Energy Monitoring' => 'assets/images/energy_monitoring_circuit_mockup.png',
+    'Gate & Door Control' => 'assets/images/gate_door_circuit_mockup.png',
+    'Security & CCTV' => 'assets/images/security_cctv_circuit_mockup.png',
     'Gas & Fire Detection' =>
-      'Gas, smoke, and heat sensors send safety events to the controller, which triggers sirens, alerts, and cutoff relays.',
-    _ =>
-      'Sensors send low-voltage signals to the controller, which drives the connected automation output.',
-  };
-}
-
-String _outputTitle(String label) {
-  return switch (label) {
-    'Water Pump / Motor Control' => 'Pump Control',
-    'AC & Heating Control' => 'Climate Output',
-    'Energy Monitoring' => 'Energy Dashboard',
-    'Gate & Door Control' => 'Gate / Door Output',
-    'Security & CCTV' => 'Security Actions',
-    'Gas & Fire Detection' => 'Safety Actions',
-    _ => 'Output Control',
-  };
-}
-
-IconData _outputIcon(String label) {
-  return switch (label) {
-    'Water Pump / Motor Control' => Icons.water_drop_outlined,
-    'AC & Heating Control' => Icons.ac_unit_rounded,
-    'Energy Monitoring' => Icons.bar_chart_rounded,
-    'Gate & Door Control' => Icons.sensor_door_outlined,
-    'Security & CCTV' => Icons.videocam_outlined,
-    'Gas & Fire Detection' => Icons.local_fire_department_outlined,
-    _ => Icons.output_rounded,
-  };
-}
-
-List<String> _outputConnections(String label) {
-  return switch (label) {
-    'Water Pump / Motor Control' => const [
-        'Relay / contactor module',
-        'Pump motor output',
-        'Dry-run safety cutoff',
-        'Tank level auto stop',
-      ],
-    'AC & Heating Control' => const [
-        'IR blaster or thermostat output',
-        'AC / heater relay control',
-        'Comfort mode automation',
-        'Energy-aware scheduling',
-      ],
-    'Energy Monitoring' => const [
-        'Live energy dashboard',
-        'Usage report and alerts',
-        'Overload warning',
-        'Device consumption status',
-      ],
-    'Gate & Door Control' => const [
-        'Motor driver / controller',
-        'Open and close relay outputs',
-        'Limit switch stop signal',
-        'Obstacle safety cutoff',
-      ],
-    'Security & CCTV' => const [
-        'CCTV live view / recording',
-        'Siren and alert output',
-        'Door / lock action',
-        'Mobile security notification',
-      ],
-    'Gas & Fire Detection' => const [
-        'Fire alarm siren',
-        'Gas leak alert',
-        'Emergency relay cutoff',
-        'Mobile safety notification',
-      ],
-    _ => const [
-        'Relay / controller output',
-        'Connected device load',
-        'App and manual control',
-        'Safety cutoff path',
-      ],
-  };
-}
-
-String _safetyNote(String label) {
-  final load = switch (label) {
-    'Gate & Door Control' => 'gate or door motor controller',
-    'Water Pump / Motor Control' => 'pump contactor',
-    'AC & Heating Control' => 'AC, heater, or thermostat controller',
-    'Energy Monitoring' => 'metering module and reporting dashboard',
-    'Security & CCTV' => 'camera, siren, or access module',
-    'Gas & Fire Detection' => 'alarm siren or emergency cutoff relay',
-    _ => 'relay or control module',
-  };
-  return 'Connection flow: low-voltage sensors -> smart controller -> $load -> device/load. Keep controller wiring isolated from AC mains; final high-voltage wiring should be done by a qualified electrician.';
-}
-
-class _SensorChip extends StatelessWidget {
-  const _SensorChip({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FBFF),
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: color.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.sensors_rounded, color: color, size: 20),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Color(0xFF0C1D4A),
-                    fontSize: 12.5,
-                    height: 1.2,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  _sensorDescription(label),
-                  style: const TextStyle(
-                    color: Color(0xFF52617F),
-                    fontSize: 11,
-                    height: 1.25,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _sensorDescription(String sensor) {
-  return switch (sensor) {
-    'Motion sensor' => 'Detects movement in a room or area.',
-    'PIR motion sensor' =>
-      'Detects body heat movement for lighting and security actions.',
-    'Microwave motion sensor' =>
-      'Uses microwave signals to detect movement across wider coverage.',
-    'mmWave presence sensor' =>
-      'Detects fine human presence, even when someone is sitting still.',
-    'Motion / occupancy sensor' =>
-      'Detects whether a room is active or occupied.',
-    'Ambient light / LDR sensor' =>
-      'Measures surrounding light level for automatic brightness control.',
-    'Light sensor' =>
-      'Reads daylight or room brightness to trigger lighting scenes.',
-    'Smart switch / relay module' =>
-      'Switches electrical devices on or off through automation.',
-    'Smart switches / relays per room' =>
-      'Gives each room independent automated control points.',
-    'Smart switches, dimmers, curtains, and AC modules' =>
-      'Runs multiple connected devices together for one scene or mode.',
-    'Smart relay module' => 'Controls appliances and loads through app rules.',
-    'Smart relay / contactor module' =>
-      'Safely switches higher-load equipment like pumps.',
-    'Dimmer module' => 'Controls light brightness instead of only on or off.',
-    'IR blaster for AC / TV' =>
-      'Sends remote-control signals to AC, TV, and similar devices.',
-    'IR blaster or thermostat module' =>
-      'Controls AC or thermostat settings from automation rules.',
-    'Temperature sensor' => 'Measures room or device temperature.',
-    'Humidity sensor' => 'Measures moisture level in the air.',
-    'Air quality sensor' =>
-      'Checks air condition such as dust, smoke, VOC, or CO2 by model.',
-    'Current / power monitoring sensor' =>
-      'Tracks electricity use and confirms whether a device is running.',
-    'Power monitoring sensor' =>
-      'Measures energy use for schedules, reports, and safety checks.',
-    'Smart energy meter' =>
-      'Measures total energy consumption for reports and dashboards.',
-    'Voltage monitoring sensor' =>
-      'Tracks voltage level for power quality and safety alerts.',
-    'Load status sensor' =>
-      'Confirms whether a connected load is active or idle.',
-    'Door sensor' => 'Detects whether a door or window is open or closed.',
-    'Door sensor for entry detection' =>
-      'Confirms entry or exit when a door opens.',
-    'Door / gate magnetic sensor' =>
-      'Detects open or closed status using a magnetic contact.',
-    'Limit switch sensor' =>
-      'Stops a motor when the curtain, gate, or door reaches its end.',
-    'IR obstacle sensor' =>
-      'Detects objects in the path of a gate, curtain, or door.',
-    'Motor controller' =>
-      'Drives and controls curtain, gate, or shutter motors.',
-    'Remote / RF / Wi-Fi control module' =>
-      'Adds remote, wireless, or app-based control to motorized devices.',
-    'CCTV camera' =>
-      'Provides live video, recording, or event-based security monitoring.',
-    'Siren / alarm module' =>
-      'Sounds an alarm when a security or safety event is detected.',
-    'Smart lock / access module' =>
-      'Controls door lock or access permissions from automation rules.',
-    'Gas leak sensor' =>
-      'Detects LPG or gas leakage and triggers safety alerts.',
-    'Smoke detector' => 'Detects smoke for early fire warning.',
-    'Heat sensor' => 'Detects unusual heat rise or fire risk.',
-    'Fire alarm siren' =>
-      'Sounds an emergency alarm during fire or gas safety events.',
-    'Emergency relay cutoff' =>
-      'Cuts a connected circuit during a configured safety emergency.',
-    'Fan / AC relay controller' =>
-      'Switches fans or AC circuits based on climate rules.',
-    'Water level sensor' => 'Measures tank water level.',
-    'Flow sensor' => 'Detects water movement through a pipe.',
-    'Pressure sensor' => 'Measures pressure in a water or air line.',
-    'Dry-run protection sensor' =>
-      'Protects a pump when water supply is missing.',
-    'Timer / app scheduler' =>
-      'Runs automations at selected times or routines.',
-    'Time / schedule trigger' =>
-      'Starts scenes automatically by time, day, or routine.',
-    'Optional motion sensor for override' =>
-      'Lets movement temporarily change or cancel a scheduled action.',
-    'Bluetooth / BLE beacon' =>
-      'Detects nearby phones or tags for presence-based automation.',
-    'RFID / NFC reader' =>
-      'Identifies cards, tags, or phones for access and actions.',
-    'Ultrasonic proximity sensor' =>
-      'Measures distance to nearby objects using sound waves.',
-    'Wi-Fi / mobile presence detection' =>
-      'Uses phone network presence to trigger home or away actions.',
-    _ => 'Supports this automation with device status or trigger input.',
+      'assets/images/gas_fire_detection_circuit_mockup.png',
+    _ => null,
   };
 }
 
@@ -4668,13 +4539,16 @@ class _AutomationEstimatorCardState extends State<_AutomationEstimatorCard> {
       id: 'ac_heating',
       icon: Icons.ac_unit_rounded,
       title: 'AC & Heating',
-      unitLabel: 'comfort points',
+      unitLabel: 'AC / heater points',
       defaultRoom: 'Bedroom',
-      defaultPrice: 2500,
+      defaultPrice: 3500,
       included: [
         'Temperature sensor',
-        'IR blaster or thermostat module',
-        'AC / heater relay optional',
+        'Humidity and occupancy sensor optional',
+        'IR blaster or thermostat interface',
+        'Cool / heat / fan relay control optional',
+        'Schedule and comfort mode setup',
+        'Energy monitoring optional',
         'Mobile and web app control',
       ],
     ),
@@ -5998,9 +5872,16 @@ class _InternalPricingPanelState extends State<_InternalPricingPanel> {
 }
 
 class _FacilityAutomationTable extends StatelessWidget {
-  const _FacilityAutomationTable({required this.color});
+  const _FacilityAutomationTable({
+    required this.color,
+    required this.onItemSelected,
+  });
 
   final Color color;
+  final void Function(
+    _FacilityAutomationRowData facility,
+    _AutomationButtonData item,
+  ) onItemSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -6030,7 +5911,11 @@ class _FacilityAutomationTable extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           ...rows.map(
-            (row) => _FacilityAutomationRow(row: row, color: color),
+            (row) => _FacilityAutomationRow(
+              row: row,
+              color: color,
+              onItemSelected: onItemSelected,
+            ),
           ),
         ],
       ),
@@ -6039,10 +5924,18 @@ class _FacilityAutomationTable extends StatelessWidget {
 }
 
 class _FacilityAutomationRow extends StatelessWidget {
-  const _FacilityAutomationRow({required this.row, required this.color});
+  const _FacilityAutomationRow({
+    required this.row,
+    required this.color,
+    required this.onItemSelected,
+  });
 
   final _FacilityAutomationRowData row;
   final Color color;
+  final void Function(
+    _FacilityAutomationRowData facility,
+    _AutomationButtonData item,
+  ) onItemSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -6087,6 +5980,7 @@ class _FacilityAutomationRow extends StatelessWidget {
                       item: item,
                       color: color,
                       compact: true,
+                      onTap: () => onItemSelected(row, item),
                     ),
                     if (item != row.items.last) const SizedBox(width: 10),
                   ],
@@ -6446,7 +6340,7 @@ int _commercialDefaultPrice(String label) {
       lower.contains('hvac') ||
       lower.contains('fridge') ||
       lower.contains('cold')) {
-    return 5500;
+    return 6500;
   }
   if (lower.contains('motion') ||
       lower.contains('occupancy') ||
@@ -6478,9 +6372,10 @@ String _commercialIncludedLine(String label) {
     return 'Pump control with sensor trigger option';
   }
   if (lower.contains('ac') ||
+      lower.contains('hvac') ||
       lower.contains('fridge') ||
       lower.contains('cold')) {
-    return 'Temperature schedule and monitoring ready';
+    return 'Temperature, schedule, comfort mode, and relay / thermostat control ready';
   }
   if (lower.contains('motion') || lower.contains('occupancy')) {
     return 'Presence-based trigger rule ready';
@@ -6634,6 +6529,7 @@ List<_AutomationHotspot> _smartHomeAutomationHotspots() {
   const labels = [
     'Smart Lighting',
     'Home Appliance Control',
+    'AC & Heating Control',
     'Water Pump / Motor Control',
     'Energy Monitoring',
     'Gate & Door Control',

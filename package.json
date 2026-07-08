@@ -2,6 +2,7 @@
   "name": "lystingdomainpage",
   "private": true,
   "scripts": {
+    "dev:web": "flutter run -d web-server --web-hostname 127.0.0.1 --web-port 8081",
     "build": "flutter build web --release",
     "deploy": "npm run build && wrangler pages deploy build/web --project-name lystingdomainpage",
     "deploy:preview": "npm run build && wrangler pages deploy build/web --project-name lystingdomainpage --branch preview",

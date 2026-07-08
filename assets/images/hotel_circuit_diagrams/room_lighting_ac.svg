@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .bg{fill:#f6f9ff}.card{fill:#fff;stroke:#d9e6ff;stroke-width:3}.title{font:800 38px Arial;fill:#0c1d4a}.sub{font:600 22px Arial;fill:#52617f}.label{font:700 22px Arial;fill:#0c1d4a}.small{font:600 18px Arial;fill:#52617f}.wire{fill:none;stroke:#2468ff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}.power{fill:none;stroke:#ff7a00;stroke-width:6;stroke-linecap:round}.safe{fill:none;stroke:#0aa86b;stroke-width:5;stroke-linecap:round;stroke-dasharray:12 10}.box{fill:#ffffff;stroke:#2468ff;stroke-width:3}.load{fill:#eef4ff;stroke:#0c1d4a;stroke-width:3}.pin{fill:#2468ff}.warn{font:700 17px Arial;fill:#d45b00}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#2468ff"/></marker>
+    <marker id="arrowOrange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#ff7a00"/></marker>
+  </defs>
+  <rect class="bg" width="1400" height="900"/>
+  <text class="title" x="70" y="80">Hotel / Lodge - Room Lighting / AC Circuit</text>
+  <text class="sub" x="70" y="118">Light relay + AC controller + temperature sensor connected to IoT controller</text>
+
+  <rect class="card" x="60" y="160" width="1280" height="650" rx="28"/>
+  <rect class="box" x="110" y="245" width="190" height="110" rx="16"/>
+  <text class="label" x="145" y="292">230V AC</text>
+  <text class="small" x="148" y="322">Mains Input</text>
+
+  <rect class="box" x="380" y="245" width="190" height="110" rx="16"/>
+  <text class="label" x="425" y="292">MCB</text>
+  <text class="small" x="415" y="322">Protection</text>
+
+  <rect class="box" x="655" y="220" width="230" height="160" rx="18"/>
+  <text class="label" x="690" y="278">IoT Controller</text>
+  <text class="small" x="695" y="310">Wi-Fi / BLE</text>
+  <circle class="pin" cx="685" cy="350" r="8"/><text class="small" x="702" y="356">D1 Relay</text>
+  <circle class="pin" cx="815" cy="350" r="8"/><text class="small" x="832" y="356">D2 AC</text>
+
+  <rect class="load" x="1010" y="210" width="240" height="120" rx="16"/>
+  <text class="label" x="1058" y="262">Light Load</text>
+  <text class="small" x="1056" y="292">Lamp / room light</text>
+
+  <rect class="load" x="1010" y="400" width="240" height="120" rx="16"/>
+  <text class="label" x="1060" y="452">AC Unit</text>
+  <text class="small" x="1045" y="482">IR / thermostat control</text>
+
+  <rect class="box" x="380" y="510" width="205" height="110" rx="16"/>
+  <text class="label" x="410" y="558">Temp Sensor</text>
+  <text class="small" x="430" y="588">DHT22 / NTC</text>
+
+  <rect class="box" x="655" y="520" width="230" height="100" rx="18"/>
+  <text class="label" x="690" y="562">5V / 12V PSU</text>
+  <text class="small" x="700" y="592">Controller supply</text>
+
+  <path class="power" marker-end="url(#arrowOrange)" d="M300 300 H380"/>
+  <path class="power" marker-end="url(#arrowOrange)" d="M570 300 H655"/>
+  <path class="power" marker-end="url(#arrowOrange)" d="M885 270 H1010"/>
+  <path class="power" marker-end="url(#arrowOrange)" d="M885 350 C940 350 940 460 1010 460"/>
+  <path class="wire" marker-end="url(#arrow)" d="M585 565 H655"/>
+  <path class="wire" marker-end="url(#arrow)" d="M770 520 V380"/>
+  <path class="safe" marker-end="url(#arrow)" d="M585 565 C630 470 655 405 700 360"/>
+  <text class="warn" x="110" y="735">Note: Use certified electrician isolation, fuse/MCB, proper earthing, and rated relay/contactor for AC load.</text>
+</svg>
