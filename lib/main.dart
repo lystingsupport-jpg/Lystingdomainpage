@@ -1613,28 +1613,89 @@ class _SolutionsSection extends StatelessWidget {
       builder: (context, constraints) {
         const columns = 3;
 
-        return Wrap(
-          alignment: WrapAlignment.center,
-          spacing: design.solutionPhoneGap,
-          runSpacing: AppDesign.solutionPhoneRunGap,
-          children: items
-              .map(
-                (item) => SizedBox(
-                  width: _gridWidth(
-                    constraints.maxWidth,
-                    columns,
-                    design.solutionPhoneGap,
-                  ),
-                  child: _SolutionCard(
-                    data: item,
-                    design: design,
-                    onTap: () => onCategorySelected(item.category),
-                  ),
-                ),
-              )
-              .toList(),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: design.solutionPhoneGap,
+              runSpacing: AppDesign.solutionPhoneRunGap,
+              children: items
+                  .map(
+                    (item) => SizedBox(
+                      width: _gridWidth(
+                        constraints.maxWidth,
+                        columns,
+                        design.solutionPhoneGap,
+                      ),
+                      child: _SolutionCard(
+                        data: item,
+                        design: design,
+                        onTap: () => onCategorySelected(item.category),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 14),
+            _CarouselDots(
+              count: (items.length / columns).ceil(),
+              activeIndex: 0,
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+class _CarouselDots extends StatelessWidget {
+  const _CarouselDots({
+    required this.count,
+    required this.activeIndex,
+  });
+
+  final int count;
+  final int activeIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Mobile layout carousel position',
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(count, (index) {
+          final selected = index == activeIndex;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            width: selected ? 22 : 8,
+            height: 8,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              color: selected
+                  ? const Color(0xFF1766F8)
+                  : const Color(0xFF7FA8EA).withValues(alpha: 0.42),
+              border: Border.all(
+                color: selected
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : Colors.white.withValues(alpha: 0.55),
+                width: 1,
+              ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF1766F8).withValues(alpha: 0.28),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
+            ),
+          );
+        }),
+      ),
     );
   }
 }
@@ -7157,20 +7218,6 @@ class _DownloadSection extends StatelessWidget {
                     fontSize: 24 * scale,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0,
-                  ),
-                ),
-              ),
-              SizedBox(width: gap),
-              Expanded(
-                flex: 13,
-                child: Text(
-                  'Launch the experience on the store that fits your device.',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: const Color(0xFFD9E3FF),
-                    fontSize: 13 * scale,
-                    height: 1.2,
                   ),
                 ),
               ),
