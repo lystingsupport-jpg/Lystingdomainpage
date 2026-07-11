@@ -1,11 +1,11 @@
 {
-    "name": "lystingdomainpage",
-    "short_name": "lystingdomainpage",
+    "name": "Today List",
+    "short_name": "Today List",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F4EF",
+    "theme_color": "#183A3D",
+    "description": "A simple Flutter to-do list app for planning today's tasks.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
