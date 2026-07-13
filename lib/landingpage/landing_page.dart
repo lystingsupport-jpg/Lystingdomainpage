@@ -70,44 +70,52 @@ class _TopBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2778FF), Color(0xFF1050D8)],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 360;
+          return Row(
+            children: [
+              Container(
+                width: compact ? 44 : 52,
+                height: compact ? 44 : 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2778FF), Color(0xFF1050D8)],
+                  ),
+                ),
+                child: Icon(Icons.menu,
+                    color: Colors.white, size: compact ? 26 : 30),
               ),
-            ),
-            child: const Icon(Icons.menu, color: Colors.white, size: 30),
-          ),
-          const SizedBox(width: 14),
-          const Text(
-            'LysTing',
-            style: TextStyle(
-              color: Color(0xFF667085),
-              fontSize: 27,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF145BE5),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+              const SizedBox(width: 12),
+              Text(
+                'LysTing',
+                style: TextStyle(
+                  color: const Color(0xFF667085),
+                  fontSize: compact ? 23 : 27,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            onPressed: () {},
-            child: const Text(
-              'Contact Us',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
+              const Spacer(),
+              if (!compact)
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF145BE5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: () {},
+                  child: const Text(
+                    'Contact Us',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -118,8 +126,9 @@ class _HeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
     return Container(
-      height: 246,
+      height: compact ? 210 : 246,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(42),
         gradient: const LinearGradient(
@@ -135,12 +144,12 @@ class _HeroBanner extends StatelessWidget {
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 'LysTing',
                 style: TextStyle(
                   color: Color(0xFFF4F8FF),
-                  fontSize: 86,
+                  fontSize: compact ? 56 : 86,
                   height: 0.95,
                   fontWeight: FontWeight.w900,
                   shadows: [
@@ -151,12 +160,12 @@ class _HeroBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 18),
+              const SizedBox(height: 18),
               Text(
                 'Your local solution hub',
                 style: TextStyle(
                   color: Color(0xFFFFD56A),
-                  fontSize: 22,
+                  fontSize: compact ? 18 : 22,
                   fontStyle: FontStyle.italic,
                   letterSpacing: 0.7,
                   fontWeight: FontWeight.w600,
@@ -167,7 +176,7 @@ class _HeroBanner extends StatelessWidget {
           const Positioned(
             top: 42,
             child: Padding(
-              padding: EdgeInsets.only(left: 210),
+              padding: EdgeInsets.only(left: 150),
               child: Icon(Icons.wb_sunny, color: Color(0xFFFFB938), size: 22),
             ),
           ),
@@ -455,42 +464,76 @@ class _DownloadStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
     return Container(
-      height: 96,
-      padding: const EdgeInsets.symmetric(horizontal: 22),
+      height: compact ? 214 : 96,
+      padding: EdgeInsets.symmetric(horizontal: 22, vertical: compact ? 18 : 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: const LinearGradient(
           colors: [Color(0xFF136CFF), Color(0xFF092A66), Color(0xFF061B44)],
         ),
       ),
-      child: Row(
-        children: const [
-          Text(
-            'Download our apps',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
+      child: compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Download our apps',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Launch the experience on the store that fits your device.',
+                  style: TextStyle(
+                    color: Color(0xFFD9E7FF),
+                    fontSize: 14,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 10,
+                  children: const [
+                    _StoreBadge(icon: Icons.play_arrow, title: 'Google Play'),
+                    _StoreBadge(icon: Icons.apple, title: 'App Store'),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              children: const [
+                Text(
+                  'Download our apps',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(width: 34),
+                Expanded(
+                  child: Text(
+                    'Launch the experience on the store that fits your device.',
+                    style: TextStyle(
+                      color: Color(0xFFD9E7FF),
+                      fontSize: 14,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16),
+                _StoreBadge(icon: Icons.play_arrow, title: 'Google Play'),
+                SizedBox(width: 14),
+                _StoreBadge(icon: Icons.apple, title: 'App Store'),
+              ],
             ),
-          ),
-          SizedBox(width: 34),
-          Expanded(
-            child: Text(
-              'Launch the experience on the store that fits your device.',
-              style: TextStyle(
-                color: Color(0xFFD9E7FF),
-                fontSize: 14,
-                height: 1.25,
-              ),
-            ),
-          ),
-          SizedBox(width: 16),
-          _StoreBadge(icon: Icons.play_arrow, title: 'Google Play'),
-          SizedBox(width: 14),
-          _StoreBadge(icon: Icons.apple, title: 'App Store'),
-        ],
-      ),
     );
   }
 }
