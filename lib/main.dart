@@ -314,17 +314,7 @@ class _LandingPageState extends State<LandingPage> {
                     ),
                   );
 
-                  if (constraints.maxWidth < 640) {
-                    return landingContent;
-                  }
-
-                  return ClipRect(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.topCenter,
-                      child: landingContent,
-                    ),
-                  );
+                  return landingContent;
                 },
               ),
             ),
@@ -359,74 +349,148 @@ class _LandingContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final useAdaptiveMobileLayout = size.width < 900;
-
-    if (!useAdaptiveMobileLayout) {
-      return SingleChildScrollView(
-        primary: true,
-        child: Column(
-          children: [
-            Padding(
-              padding: _responsivePagePadding(context, vertical: 16),
-              child: _TopNavigation(design: design),
-            ),
-            Padding(
-              padding: _responsivePagePadding(context, vertical: 0),
-              child: _SectionShell(
-                child: Column(
-                  children: [
-                    _HeroSection(design: design),
-                    const SizedBox(height: AppDesign.sectionGap),
-                    _SolutionsSection(
-                      design: design,
-                      onCategorySelected: onCategorySelected,
-                    ),
-                    SizedBox(height: _bottomCardsTopGap(context)),
-                    const _DownloadSection(),
-                    SizedBox(height: _downloadStatsGap(context)),
-                    const _StatsSection(),
-                    const SizedBox(height: AppDesign.pageBottomGap),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      primary: true,
-      child: Column(
-        children: [
-          Padding(
-            padding: _responsivePagePadding(context, vertical: 10),
-            child: _TopNavigation(design: design),
-          ),
-          Padding(
-            padding: _responsivePagePadding(context, vertical: 0),
-            child: _SectionShell(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mediaSize = MediaQuery.sizeOf(context);
+        final viewportHeight = constraints.hasBoundedHeight
+            ? constraints.maxHeight
+            : mediaSize.height;
+        final metrics = _LandingViewportMetrics.from(
+          width: constraints.maxWidth,
+          height: viewportHeight,
+        );
+        final page = SingleChildScrollView(
+          primary: true,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: viewportHeight),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: metrics.bottomSafeGap),
               child: Column(
                 children: [
-                  _HeroSection(design: design),
-                  const SizedBox(height: 10),
-                  _SolutionsSection(
-                    design: design,
-                    onCategorySelected: onCategorySelected,
-                    fitMobileRow: size.width >= 520,
+                  Padding(
+                    padding: _responsivePagePadding(
+                      context,
+                      vertical: metrics.navVerticalPadding,
+                    ),
+                    child: _TopNavigation(design: design),
                   ),
-                  const SizedBox(height: 14),
-                  const _DownloadSection(),
-                  SizedBox(height: _downloadStatsGap(context)),
-                  const _StatsSection(),
-                  const SizedBox(height: AppDesign.pageBottomGap),
+                  Padding(
+                    padding: _responsivePagePadding(context, vertical: 0),
+                    child: _SectionShell(
+                      child: SizedBox(
+                        height: metrics.sectionHeight,
+                        child: Column(
+                          children: [
+                            _HeroSection(
+                              design: design,
+                              maxHeight: metrics.heroHeight,
+                            ),
+                            SizedBox(height: metrics.heroCardsGap),
+                            _SolutionsSection(
+                              design: design,
+                              onCategorySelected: onCategorySelected,
+                              fitMobileRow: metrics.fitMobileRow,
+                              maxCardHeight: metrics.cardHeight,
+                            ),
+                            const Spacer(),
+                            const _DownloadSection(compact: true),
+                            SizedBox(height: metrics.downloadStatsGap),
+                            const _StatsSection(compact: true),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-        ],
-      ),
+        );
+
+        return page;
+      },
+    );
+  }
+}
+
+class _LandingViewportMetrics {
+  const _LandingViewportMetrics({
+    required this.navVerticalPadding,
+    required this.sectionHeight,
+    required this.heroHeight,
+    required this.heroCardsGap,
+    required this.cardHeight,
+    required this.fitMobileRow,
+    required this.downloadStatsGap,
+    required this.bottomSafeGap,
+  });
+
+  final double navVerticalPadding;
+  final double sectionHeight;
+  final double heroHeight;
+  final double heroCardsGap;
+  final double cardHeight;
+  final bool fitMobileRow;
+  final double downloadStatsGap;
+  final double bottomSafeGap;
+
+  static _LandingViewportMetrics from({
+    required double width,
+    required double height,
+  }) {
+    final mobile = width < 900;
+    final narrow = width < 520;
+    final navVerticalPadding = mobile ? 10.0 : 16.0;
+    final horizontalPadding = width < 420
+        ? AppDesign.pagePaddingMobile
+        : width < 760
+            ? AppDesign.pagePaddingTablet
+            : AppDesign.pagePaddingDesktop;
+    final contentWidth = (width - horizontalPadding * 2).clamp(
+      280.0,
+      double.infinity,
+    );
+    final bottomSafeGap = mobile ? 8.0 : 12.0;
+    final navHeight = mobile ? 64.0 : 72.0;
+    final sectionHeight =
+        (height - navHeight - navVerticalPadding * 2 - bottomSafeGap)
+            .clamp(520.0, height);
+
+    final bottomBandHeight = width < 520
+        ? 118.0
+        : width < 900
+            ? 132.0
+            : 138.0;
+    final heroCardsGap = mobile ? 8.0 : AppDesign.sectionGap;
+    final downloadStatsGap = width < 640 ? 8.0 : 10.0;
+    final dotHeight = 16.0;
+    final heroHeight = (sectionHeight * (mobile ? 0.18 : 0.17))
+        .clamp(mobile ? 78.0 : 92.0, mobile ? 102.0 : 118.0);
+    final availableForCards = sectionHeight -
+        heroHeight -
+        heroCardsGap -
+        bottomBandHeight -
+        downloadStatsGap -
+        dotHeight;
+    final columnsWidth =
+        _gridWidth(contentWidth, 3, AppDesign.solutionPhoneGap);
+    final naturalCardHeight = columnsWidth / AppDesign.solutionPhoneAspectRatio;
+    final maxCardHeight = mobile ? 320.0 : 440.0;
+    final minCardHeight = narrow ? 210.0 : 190.0;
+    final cardHeight = availableForCards.clamp(
+      minCardHeight,
+      naturalCardHeight.clamp(minCardHeight, mobile ? maxCardHeight : 580.0),
+    );
+
+    return _LandingViewportMetrics(
+      navVerticalPadding: navVerticalPadding,
+      sectionHeight: sectionHeight,
+      heroHeight: heroHeight,
+      heroCardsGap: heroCardsGap,
+      cardHeight: cardHeight,
+      fitMobileRow: true,
+      downloadStatsGap: downloadStatsGap,
+      bottomSafeGap: bottomSafeGap,
     );
   }
 }
@@ -442,30 +506,6 @@ EdgeInsets _responsivePagePadding(
           ? AppDesign.pagePaddingTablet
           : AppDesign.pagePaddingDesktop;
   return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
-}
-
-double _bottomCardsTopGap(BuildContext context) {
-  final size = MediaQuery.sizeOf(context);
-  final width = size.width;
-  final height = size.height;
-  if (width < 640) {
-    return (height - 820).clamp(10.0, 130.0);
-  }
-  if (width < 900) {
-    return (height - 820).clamp(12.0, 150.0);
-  }
-  return (height - 820).clamp(16.0, 170.0);
-}
-
-double _downloadStatsGap(BuildContext context) {
-  final width = MediaQuery.sizeOf(context).width;
-  if (width < 640) {
-    return 8;
-  }
-  if (width < 900) {
-    return 10;
-  }
-  return 12;
 }
 
 enum FeatureCategory { iot, ecommerce, b2b }
@@ -615,12 +655,7 @@ class _SectionShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppDesign.maxContentWidth),
-        child: child,
-      ),
-    );
+    return SizedBox(width: double.infinity, child: child);
   }
 }
 
@@ -1057,8 +1092,8 @@ class _DesignPanel extends StatelessWidget {
                 _DesignSlider(
                   label: 'Sun X',
                   value: design.sunLeft,
-                  min: 210,
-                  max: 270,
+                  min: 40,
+                  max: 420,
                   onChanged: (value) {
                     onChanged(design.copyWith(sunLeft: value));
                   },
@@ -1066,8 +1101,8 @@ class _DesignPanel extends StatelessWidget {
                 _DesignSlider(
                   label: 'Sun Y',
                   value: design.sunTop,
-                  min: -8,
-                  max: 24,
+                  min: -80,
+                  max: 100,
                   onChanged: (value) {
                     onChanged(design.copyWith(sunTop: value));
                   },
@@ -1690,9 +1725,13 @@ class _PrimaryButton extends StatelessWidget {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection({required this.design});
+  const _HeroSection({
+    required this.design,
+    this.maxHeight,
+  });
 
   final _DesignTuning design;
+  final double? maxHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -1704,11 +1743,14 @@ class _HeroSection extends StatelessWidget {
             compact ? design.heroMobilePaddingX : design.heroPaddingX;
         final paddingY =
             compact ? design.heroMobilePaddingY : design.heroPaddingY;
-        final heroHeight = compact
+        final preferredHeroHeight = compact
             ? design.heroHeightMobile
             : constraints.maxWidth < AppDesign.heroTabletBreakpoint
                 ? design.heroHeightTablet
                 : design.heroHeightDesktop;
+        final heroHeight = maxHeight == null
+            ? preferredHeroHeight
+            : maxHeight!.clamp(72.0, preferredHeroHeight);
         return Transform.translate(
           offset: Offset(design.heroCardOffsetX, design.heroCardOffsetY),
           child: Container(
@@ -1749,7 +1791,7 @@ class _HeroSection extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.topCenter,
-                    child: _HeroCopy(design: design),
+                    child: ClipRect(child: _HeroCopy(design: design)),
                   ),
                 ],
               ),
@@ -1768,25 +1810,58 @@ class _HeroCopy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Transform.translate(
-            offset: Offset(design.wordmarkOffsetX, design.wordmarkOffsetY),
-            child: _BigWordmark(design: design),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+        final width = constraints.maxWidth;
+        final scale = (height / 100).clamp(0.82, 1.0);
+        final wordmarkTop =
+            (height * 0.5) - (AppDesign.wordmarkBaseHeight * scale * 0.62);
+        final tunedWordmarkTop = wordmarkTop + design.wordmarkOffsetY * scale;
+        final subtitleTop = (height * 0.5) + (20 * scale);
+        final tunedSubtitleTop =
+            subtitleTop + design.heroSubtitleOffsetY * scale;
+
+        return SizedBox(
+          width: width,
+          height: height,
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              Positioned(
+                top: tunedWordmarkTop,
+                left: 0,
+                right: 0,
+                child: Transform.translate(
+                  offset: Offset(design.wordmarkOffsetX * scale, 0),
+                  child: Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.topCenter,
+                    child: Center(
+                      child: _BigWordmark(
+                        design: design,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: tunedSubtitleTop,
+                left: 0,
+                right: 0,
+                child: Transform.translate(
+                  offset: Offset(design.heroSubtitleOffsetX * scale, 0),
+                  child: Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.topCenter,
+                    child: const Center(child: _HeroSunTitle()),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          Transform.translate(
-            offset: Offset(
-              design.heroSubtitleOffsetX,
-              design.heroSubtitleOffsetY,
-            ),
-            child: const _HeroSunTitle(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -2001,11 +2076,13 @@ class _SolutionsSection extends StatelessWidget {
     required this.design,
     required this.onCategorySelected,
     this.fitMobileRow = false,
+    this.maxCardHeight,
   });
 
   final _DesignTuning design;
   final ValueChanged<FeatureCategory> onCategorySelected;
   final bool fitMobileRow;
+  final double? maxCardHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -2013,45 +2090,57 @@ class _SolutionsSection extends StatelessWidget {
       _SolutionCardData(
         category: FeatureCategory.iot,
         icon: Icons.wifi_rounded,
-        iconBg: const Color(0xFF1C5EFF),
+        iconBg: Colors.black,
         title: 'LysTing Smart IoT',
         subtitle: 'Smart automation for connected spaces',
         bullets: [
-          'Plug & Play Devices',
-          'Real-time Monitoring',
+          'Smart Home Automation',
+          'Smart Commercial Automation',
+          'Easy Plug-and-Play Devices',
+          'Real-Time Monitoring',
           'Energy Dashboard',
+          'Supports iOS, Android, Web',
         ],
-        accent: const Color(0xFF0E5EFF),
+        accent: Colors.black,
         visual: const _DeviceVisual(),
       ),
       _SolutionCardData(
         category: FeatureCategory.ecommerce,
         icon: Icons.shopping_cart_outlined,
-        iconBg: const Color(0xFFFF8B1E),
+        iconBg: const Color(0xFF275AE5),
         title: 'LysTing App',
-        subtitle: 'Your local solution hub driven by customer reviews',
+        subtitle: 'Your local solution app...\ndriven by customer reviews...',
         bullets: [
           'Food',
           'Products',
           'Services',
-          'All A to Z Service',
+          'Store-Based Gallery',
+          'Product-Based Gallery',
+          'Agent Product Upload via Mobile App',
+          'Bulk Upload',
+          'Review-Based Products',
+          'Easy Analytics for Agent',
+          'Supports iOS, Android, Web',
         ],
-        accent: const Color(0xFFFF7A00),
+        accent: const Color(0xFF2B5BFF),
         visual: const _CartVisual(),
       ),
       _SolutionCardData(
         category: FeatureCategory.b2b,
         icon: Icons.groups_2_outlined,
-        iconBg: const Color(0xFF275AE5),
+        iconBg: const Color(0xFF7C3AED),
         title: 'LysMart',
         subtitle: 'Pure B2B',
         bullets: [
+          'Building App for Small Retail Stores',
+          'Product Search for Retailers & Wholesalers',
           'Digital Showroom',
-          'AI A to Z Service',
-          'Pure B2B',
-          'For Wholesalers',
+          'Agent Product Inventory',
+          'Agent Easy Product Upload via Mobile',
+          'Easy Analytics',
+          'Supports iOS, Android, Web',
         ],
-        accent: const Color(0xFF2B5BFF),
+        accent: const Color(0xFF7C3AED),
         visual: const _TowerVisual(),
       ),
     ];
@@ -2061,20 +2150,24 @@ class _SolutionsSection extends StatelessWidget {
         const columns = 3;
 
         final useFixedMobileRow = fitMobileRow;
-        final dotGap = useFixedMobileRow ? 8.0 : 14.0;
+        const dotGap = 8.0;
         final viewportHeight = MediaQuery.sizeOf(context).height;
-        final narrow = constraints.maxWidth < 520;
-        final cardWidth = narrow
-            ? (constraints.maxWidth * 0.72).clamp(210.0, 260.0)
-            : _gridWidth(
-                constraints.maxWidth,
-                columns,
-                design.solutionPhoneGap,
-              );
-        final cardHeight = useFixedMobileRow
-            ? (cardWidth / AppDesign.solutionPhoneAspectRatio)
-                .clamp(190.0, viewportHeight < 760 ? 280.0 : 320.0)
-            : null;
+        final cardWidth = _gridWidth(
+          constraints.maxWidth,
+          columns,
+          design.solutionPhoneGap,
+        );
+        final preferredCardMaxHeight = MediaQuery.sizeOf(context).width < 900
+            ? viewportHeight < 760
+                ? 280.0
+                : 320.0
+            : 580.0;
+        final preferredCardHeight =
+            (cardWidth / AppDesign.solutionPhoneAspectRatio)
+                .clamp(190.0, preferredCardMaxHeight);
+        final cardHeight = maxCardHeight == null
+            ? (useFixedMobileRow ? preferredCardHeight : null)
+            : maxCardHeight!.clamp(190.0, preferredCardHeight);
         final cards = items
             .map(
               (item) => SizedBox(
@@ -2093,21 +2186,7 @@ class _SolutionsSection extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (narrow)
-              SizedBox(
-                height: cardWidth / AppDesign.solutionPhoneAspectRatio,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: (constraints.maxWidth - cardWidth) / 2,
-                  ),
-                  itemBuilder: (context, index) => cards[index],
-                  separatorBuilder: (context, index) =>
-                      SizedBox(width: design.solutionPhoneGap.clamp(8.0, 18.0)),
-                  itemCount: cards.length,
-                ),
-              )
-            else if (useFixedMobileRow)
+            if (useFixedMobileRow)
               SizedBox(
                 height: cardHeight,
                 child: Row(
@@ -2234,15 +2313,25 @@ class _SolutionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = (constraints.maxWidth / design.solutionPhoneMaxWidth)
-            .clamp(0.5, 1.0);
+        final naturalHeight =
+            design.solutionPhoneMaxWidth / AppDesign.solutionPhoneAspectRatio;
+        final scaleByWidth =
+            constraints.maxWidth / design.solutionPhoneMaxWidth;
+        final scaleByHeight =
+            forcedHeight == null ? 1.0 : forcedHeight! / naturalHeight;
+        final widthScale = scaleByWidth.clamp(0.42, 1.0);
+        final heightScale = scaleByHeight.clamp(0.42, 1.0);
+        final scale = widthScale < heightScale ? widthScale : heightScale;
+        final bulletTextSize = (design.solutionBulletSize - 1.2) * scale;
+        final bulletDotSize = 6.5 * scale;
+        final bulletBottomGap = 4.0 * scale;
         final aspectRatio = forcedHeight == null
             ? AppDesign.solutionPhoneAspectRatio
             : constraints.maxWidth / forcedHeight!;
 
         return Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: design.solutionPhoneMaxWidth),
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
             child: AspectRatio(
               aspectRatio: aspectRatio,
               child: Material(
@@ -2312,156 +2401,183 @@ class _SolutionCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding:
-                                  AppDesign.solutionPhoneContentPadding * scale,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: design.solutionIconSize * scale,
-                                    height: design.solutionIconSize * scale,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          data.iconBg,
-                                          data.iconBg.withValues(alpha: 0.72),
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        design.solutionIconRadius * scale,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: data.iconBg
-                                              .withValues(alpha: 0.24),
-                                          blurRadius: 18 * scale,
-                                          offset: Offset(0, 8 * scale),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(
-                                      data.icon,
-                                      color: Colors.white,
-                                      size: 23 * scale,
-                                    ),
-                                  ),
-                                  SizedBox(height: 12 * scale),
-                                  Text(
-                                    data.title,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: design.solutionTitleColor,
-                                      fontSize: data.title.length > 12
-                                          ? (design.solutionTitleSize - 2) *
-                                              scale
-                                          : design.solutionTitleSize * scale,
-                                      fontWeight: FontWeight.w900,
-                                      height: 1.16,
-                                    ),
-                                  ),
-                                  if (data.subtitle != null) ...[
-                                    SizedBox(height: 4 * scale),
-                                    Text(
-                                      data.subtitle!,
-                                      maxLines: scale < 0.7 ? 2 : 3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: data.accent,
-                                        fontSize: data.subtitle!.length > 18
-                                            ? (design.solutionSubtitleSize -
-                                                    2) *
-                                                scale
-                                            : design.solutionSubtitleSize *
-                                                scale,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.22,
-                                      ),
-                                    ),
-                                  ],
-                                  SizedBox(height: 7 * scale),
-                                  ...data.bullets.map(
-                                    (bullet) => Padding(
-                                      padding:
-                                          EdgeInsets.only(bottom: 5 * scale),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: 6 * scale,
-                                            height: 6 * scale,
-                                            margin:
-                                                EdgeInsets.only(top: 6 * scale),
-                                            decoration: BoxDecoration(
-                                              color: data.accent,
-                                              shape: BoxShape.circle,
-                                            ),
+                            LayoutBuilder(
+                              builder: (context, screenConstraints) {
+                                final contentPadding =
+                                    AppDesign.solutionPhoneContentPadding *
+                                        scale;
+                                return Padding(
+                                  padding: contentPadding,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: design.solutionIconSize * scale,
+                                        height: design.solutionIconSize * scale,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              data.iconBg,
+                                              data.iconBg
+                                                  .withValues(alpha: 0.72),
+                                            ],
                                           ),
-                                          SizedBox(width: 8 * scale),
-                                          Expanded(
-                                            child: Text(
-                                              bullet,
-                                              maxLines: scale < 0.7 ? 1 : 2,
+                                          borderRadius: BorderRadius.circular(
+                                            design.solutionIconRadius * scale,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: data.iconBg
+                                                  .withValues(alpha: 0.24),
+                                              blurRadius: 18 * scale,
+                                              offset: Offset(0, 8 * scale),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          data.icon,
+                                          color: Colors.white,
+                                          size: 23 * scale,
+                                        ),
+                                      ),
+                                      SizedBox(height: 12 * scale),
+                                      SizedBox(
+                                        height: 58 * scale,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              data.title,
+                                              maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 color:
-                                                    design.solutionBulletColor,
-                                                fontSize:
-                                                    design.solutionBulletSize *
+                                                    design.solutionTitleColor,
+                                                fontSize: data.title.length > 12
+                                                    ? (design.solutionTitleSize -
+                                                            2) *
+                                                        scale
+                                                    : design.solutionTitleSize *
                                                         scale,
-                                                height: 1.25,
+                                                fontWeight: FontWeight.w900,
+                                                height: 1.16,
                                               ),
+                                            ),
+                                            if (data.subtitle != null) ...[
+                                              SizedBox(height: 4 * scale),
+                                              Text(
+                                                data.subtitle!,
+                                                maxLines: data.subtitle!
+                                                        .contains('\n')
+                                                    ? 2
+                                                    : scale < 0.7
+                                                        ? 2
+                                                        : 3,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: data.accent,
+                                                  fontSize:
+                                                      (design.solutionSubtitleSize -
+                                                              1) *
+                                                          scale,
+                                                  fontWeight: FontWeight.w700,
+                                                  height: 1.22,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 16 * scale),
+                                      ...data.bullets.map(
+                                        (bullet) => Padding(
+                                          padding: EdgeInsets.only(
+                                            bottom: bulletBottomGap,
+                                          ),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                width: bulletDotSize,
+                                                height: bulletDotSize,
+                                                decoration: BoxDecoration(
+                                                  color: data.accent,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8 * scale),
+                                              Expanded(
+                                                child: Text(
+                                                  bullet,
+                                                  maxLines: 1,
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                  style: TextStyle(
+                                                    color: design
+                                                        .solutionBulletColor,
+                                                    fontSize: bulletTextSize,
+                                                    fontWeight: FontWeight.w500,
+                                                    height: 1.2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              'Learn More',
+                                              style: TextStyle(
+                                                color: data.accent,
+                                                fontSize: design
+                                                        .solutionLearnMoreSize *
+                                                    scale,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            width:
+                                                design.solutionArrowButtonSize *
+                                                    scale,
+                                            height:
+                                                design.solutionArrowButtonSize *
+                                                    scale,
+                                            decoration: BoxDecoration(
+                                              color: data.accent.withValues(
+                                                alpha: design
+                                                    .solutionArrowButtonBgAlpha,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                design.solutionArrowButtonRadius *
+                                                    scale,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_forward_rounded,
+                                              color: data.accent,
+                                              size:
+                                                  design.solutionArrowIconSize *
+                                                      scale,
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          'Learn More',
-                                          style: TextStyle(
-                                            color: data.accent,
-                                            fontSize:
-                                                design.solutionLearnMoreSize *
-                                                    scale,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: design.solutionArrowButtonSize *
-                                            scale,
-                                        height: design.solutionArrowButtonSize *
-                                            scale,
-                                        decoration: BoxDecoration(
-                                          color: data.accent.withValues(
-                                            alpha: design
-                                                .solutionArrowButtonBgAlpha,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            design.solutionArrowButtonRadius *
-                                                scale,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.arrow_forward_rounded,
-                                          color: data.accent,
-                                          size: design.solutionArrowIconSize *
-                                              scale,
-                                        ),
-                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -7660,22 +7776,28 @@ class _SectionCopy extends StatelessWidget {
 }
 
 class _DownloadSection extends StatelessWidget {
-  const _DownloadSection();
+  const _DownloadSection({this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final scale = (constraints.maxWidth / 1080).clamp(0.46, 1.0);
-        final gap = 14.0 * scale;
-        final stack = constraints.maxWidth < 520;
+        final compactScale = compact && constraints.maxWidth < 520
+            ? (constraints.maxWidth / 720).clamp(0.42, 0.62)
+            : compact
+                ? scale * 0.9
+                : scale;
+        final gap = 14.0 * compactScale;
         final title = Text(
           'Download our apps',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 24 * scale,
+            fontSize: 24 * compactScale,
             fontWeight: FontWeight.w900,
             letterSpacing: 0,
           ),
@@ -7687,24 +7809,24 @@ class _DownloadSection extends StatelessWidget {
               icon: Icons.play_arrow_rounded,
               title: 'GET IT ON',
               label: 'Google Play',
-              scale: scale,
+              scale: compactScale,
             ),
             SizedBox(width: gap),
             _StoreBadge(
               icon: Icons.apple_rounded,
               title: 'Download on the',
               label: 'App Store',
-              scale: scale,
+              scale: compactScale,
             ),
           ],
         );
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: 20 * scale,
-            vertical: 18 * scale,
+            horizontal: 20 * compactScale,
+            vertical: (compact ? 12 : 18) * compactScale,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28 * scale),
+            borderRadius: BorderRadius.circular(28 * compactScale),
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -7718,25 +7840,18 @@ class _DownloadSection extends StatelessWidget {
               ),
             ],
           ),
-          child: stack
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    title,
-                    SizedBox(height: 12 * scale),
-                    Align(alignment: Alignment.centerRight, child: badges),
-                  ],
-                )
-              : Row(
-                  children: [
-                    SizedBox(
-                      width: (constraints.maxWidth * 0.38).clamp(220.0, 420.0),
-                      child: title,
-                    ),
-                    const Spacer(),
-                    badges,
-                  ],
-                ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: compact && constraints.maxWidth < 520
+                    ? (constraints.maxWidth * 0.42).clamp(118.0, 170.0)
+                    : (constraints.maxWidth * 0.38).clamp(220.0, 420.0),
+                child: title,
+              ),
+              const Spacer(),
+              badges,
+            ],
+          ),
         );
       },
     );
@@ -7811,7 +7926,9 @@ class _StoreBadge extends StatelessWidget {
 }
 
 class _StatsSection extends StatelessWidget {
-  const _StatsSection();
+  const _StatsSection({this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -7841,15 +7958,20 @@ class _StatsSection extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final scale = (constraints.maxWidth / 1080).clamp(0.42, 1.0);
-        final gap = 8.0 * scale;
-        final wrap = constraints.maxWidth < 620;
+        final compactScale = compact && constraints.maxWidth < 520
+            ? (constraints.maxWidth / 900).clamp(0.34, 0.48)
+            : compact
+                ? scale * 0.9
+                : scale;
+        final gap = 8.0 * compactScale;
+        final wrap = constraints.maxWidth < 620 && !compact;
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: 14 * scale,
-            vertical: 15 * scale,
+            horizontal: 14 * compactScale,
+            vertical: (compact ? 10 : 15) * compactScale,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26 * scale),
+            borderRadius: BorderRadius.circular(26 * compactScale),
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -7871,8 +7993,10 @@ class _StatsSection extends StatelessWidget {
                   children: items
                       .map(
                         (item) => SizedBox(
-                          width: (constraints.maxWidth - 28 * scale - gap) / 2,
-                          child: _StatItemView(item: item, scale: scale),
+                          width:
+                              (constraints.maxWidth - 28 * compactScale - gap) /
+                                  2,
+                          child: _StatItemView(item: item, scale: compactScale),
                         ),
                       )
                       .toList(),
@@ -7885,7 +8009,8 @@ class _StatsSection extends StatelessWidget {
                             padding: EdgeInsets.only(
                               right: item == items.last ? 0 : gap,
                             ),
-                            child: _StatItemView(item: item, scale: scale),
+                            child:
+                                _StatItemView(item: item, scale: compactScale),
                           ),
                         ),
                       )
@@ -7919,8 +8044,8 @@ class _StatItemView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: 12 * scale,
-        vertical: 10 * scale,
+        horizontal: 10 * scale,
+        vertical: 8 * scale,
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18 * scale),
@@ -7938,7 +8063,7 @@ class _StatItemView extends StatelessWidget {
             ),
             child: Icon(item.icon, color: Colors.white, size: 20 * scale),
           ),
-          SizedBox(width: 10 * scale),
+          SizedBox(width: 7 * scale),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -39,17 +39,17 @@ class AppDesign {
 
   static const heroCompactBreakpoint = 620.0;
   static const heroTabletBreakpoint = 900.0;
-  static const heroHeightDesktop = 100.00;
-  static const heroHeightTablet = 96.00;
-  static const heroHeightMobile = 92.00;
+  static const heroHeightDesktop = 88.00;
+  static const heroHeightTablet = 84.00;
+  static const heroHeightMobile = 78.00;
   static const heroCardOffsetX = -0.18;
   static const heroCardOffsetY = 0.00;
   static const heroRadius = 34.00;
   static const heroMobileRadius = 24.00;
   static const heroPaddingX = 34.00;
-  static const heroPaddingY = 10.00;
+  static const heroPaddingY = 6.00;
   static const heroMobilePaddingX = 18.00;
-  static const heroMobilePaddingY = 8.00;
+  static const heroMobilePaddingY = 3.00;
   static const heroGradientStart = Color(0xFF08112A);
   static const heroGradientMiddle = Color(0xFF071D4B);
   static const heroGradientEnd = Color(0xFF050B1B);
@@ -61,19 +61,19 @@ class AppDesign {
   static const wordmarkBaseHeight = 100.0;
   static const wordmarkBaseFontSize = 76.0;
   static const wordmarkColor = Color(0xFFF3F7FF);
-  static const wordmarkOffsetX = 0.00;
-  static const wordmarkOffsetY = -19.16;
+  static const wordmarkOffsetX = 10.30;
+  static const wordmarkOffsetY = -4.80;
 
-  static const sunLeft = 237.52;
-  static const sunTop = 15.80;
+  static const sunLeft = 237.03;
+  static const sunTop = 17.04;
   static const sunSize = 18.00;
   static const sunColor = Color(0xFFFFB938);
 
   static const heroSubtitleWidth = 430.0;
   static const heroSubtitleFontSize = 16.0;
   static const heroSubtitleLetterSpacing = 0.8;
-  static const heroSubtitleOffsetX = 8.60;
-  static const heroSubtitleOffsetY = -31.66;
+  static const heroSubtitleOffsetX = 17.32;
+  static const heroSubtitleOffsetY = 9.61;
 
   static const orbitArtworkWidth = 560.0;
   static const orbitArtworkHeight = 260.0;
@@ -97,7 +97,7 @@ class AppDesign {
   static const solutionPhonePadding =
       EdgeInsets.fromLTRB(11.0, 13.0, 11.0, 10.0);
   static const solutionPhoneContentPadding =
-      EdgeInsets.fromLTRB(16.0, 28.0, 16.0, 12.0);
+      EdgeInsets.fromLTRB(12.0, 28.0, 12.0, 12.0);
   static const solutionPhoneStatusHeight = 50.0;
   static const solutionPhoneSpeakerWidth = 54.0;
   static const solutionPhoneSpeakerHeight = 5.0;
