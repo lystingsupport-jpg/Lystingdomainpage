@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'design_config.dart';
+import 'external_launcher.dart';
 
 void main() {
   runApp(const LysTingApp());
@@ -279,8 +280,17 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
+  static const _contactNumber = '8807408790';
+
   _DesignTuning _design = const _DesignTuning();
   bool _showDesignPanel = false;
+
+  void _showContactDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => const _ContactDialog(phoneNumber: _contactNumber),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +312,7 @@ class _LandingPageState extends State<LandingPage> {
                     width: constraints.maxWidth,
                     child: _LandingContent(
                       design: _design,
+                      onContactTap: _showContactDialog,
                       onCategorySelected: (category) {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -341,10 +352,12 @@ class _LandingPageState extends State<LandingPage> {
 class _LandingContent extends StatelessWidget {
   const _LandingContent({
     required this.design,
+    required this.onContactTap,
     required this.onCategorySelected,
   });
 
   final _DesignTuning design;
+  final VoidCallback onContactTap;
   final ValueChanged<FeatureCategory> onCategorySelected;
 
   @override
@@ -372,7 +385,10 @@ class _LandingContent extends StatelessWidget {
                       context,
                       vertical: metrics.navVerticalPadding,
                     ),
-                    child: _TopNavigation(design: design),
+                    child: _TopNavigation(
+                      design: design,
+                      onContactTap: onContactTap,
+                    ),
                   ),
                   Padding(
                     padding: _responsivePagePadding(context, vertical: 0),
@@ -566,7 +582,7 @@ const _featureCategoryContent = {
     icon: Icons.wifi_rounded,
     iconColor: Color(0xFF195FFF),
     title: 'IoT Powerful Features',
-    kicker: 'Home Automation',
+    kicker: 'LysTing IoT',
     summary:
         'A practical IoT platform plan for smart spaces, device onboarding, automation workflows, and future service expansion.',
     heroPoints: [
@@ -625,7 +641,7 @@ const _featureCategoryContent = {
   FeatureCategory.ecommerce: _FeatureCategoryContent(
     category: FeatureCategory.ecommerce,
     icon: Icons.shopping_cart_outlined,
-    iconColor: Color(0xFFFF7A00),
+    iconColor: Color(0xFF1D63FF),
     title: 'Page Under Construction',
     kicker: 'LysTing App',
     summary: 'This page is under construction.',
@@ -635,7 +651,7 @@ const _featureCategoryContent = {
   FeatureCategory.b2b: _FeatureCategoryContent(
     category: FeatureCategory.b2b,
     icon: Icons.groups_2_outlined,
-    iconColor: Color(0xFF265BFF),
+    iconColor: Color(0xFF7C3AED),
     title: 'Page Under Construction',
     kicker: 'LysMart',
     summary: 'This page is under construction.',
@@ -646,6 +662,22 @@ const _featureCategoryContent = {
 
 _FeatureCategoryContent _contentFor(FeatureCategory category) {
   return _featureCategoryContent[category]!;
+}
+
+Color _categoryDeepColor(FeatureCategory category) {
+  return switch (category) {
+    FeatureCategory.iot => const Color(0xFF061833),
+    FeatureCategory.ecommerce => const Color(0xFF0D3FAE),
+    FeatureCategory.b2b => const Color(0xFF4C1D95),
+  };
+}
+
+Color _detailAccentFor(FeatureCategory category) {
+  return switch (category) {
+    FeatureCategory.iot => const Color(0xFF111827),
+    FeatureCategory.ecommerce => const Color(0xFF1D63FF),
+    FeatureCategory.b2b => const Color(0xFF7C3AED),
+  };
 }
 
 class _SectionShell extends StatelessWidget {
@@ -1587,9 +1619,13 @@ class _DesignColorChips extends StatelessWidget {
 }
 
 class _TopNavigation extends StatelessWidget {
-  const _TopNavigation({required this.design});
+  const _TopNavigation({
+    required this.design,
+    required this.onContactTap,
+  });
 
   final _DesignTuning design;
+  final VoidCallback onContactTap;
 
   @override
   Widget build(BuildContext context) {
@@ -1623,14 +1659,22 @@ class _TopNavigation extends StatelessWidget {
                 ? Row(
                     children: [
                       Expanded(child: _BrandLockup(design: design)),
-                      _PrimaryButton(label: 'Contact Us', design: design),
+                      _PrimaryButton(
+                        label: 'Contact Us',
+                        design: design,
+                        onTap: onContactTap,
+                      ),
                     ],
                   )
                 : Row(
                     children: [
                       _BrandLockup(design: design),
                       const Spacer(),
-                      _PrimaryButton(label: 'Contact Us', design: design),
+                      _PrimaryButton(
+                        label: 'Contact Us',
+                        design: design,
+                        onTap: onContactTap,
+                      ),
                     ],
                   ),
           );
@@ -1679,49 +1723,290 @@ class _BrandLockup extends StatelessWidget {
 }
 
 class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton({required this.label, required this.design});
+  const _PrimaryButton({
+    required this.label,
+    required this.design,
+    required this.onTap,
+  });
 
   final String label;
   final _DesignTuning design;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(design.primaryButtonRadius),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: AppDesign.primaryButtonGradient,
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x401D63FF),
-            blurRadius: 18,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: design.primaryButtonPaddingX,
-          vertical: design.primaryButtonPaddingY,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ).copyWith(fontSize: design.primaryButtonTextSize),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(design.primaryButtonRadius),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppDesign.primaryButtonGradient,
             ),
-          ],
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x401D63FF),
+                blurRadius: 18,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: design.primaryButtonPaddingX,
+              vertical: design.primaryButtonPaddingY,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ).copyWith(fontSize: design.primaryButtonTextSize),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+class _ContactDialog extends StatelessWidget {
+  const _ContactDialog({required this.phoneNumber});
+
+  final String phoneNumber;
+
+  void _openExternal(String url) {
+    openExternalUrl(url);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEAF1FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.support_agent_rounded,
+                      color: Color(0xFF1D63FF),
+                      size: 25,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Us',
+                          style: TextStyle(
+                            color: Color(0xFF0C1D4A),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Chat on WhatsApp or call directly.',
+                          style: TextStyle(
+                            color: Color(0xFF52617F),
+                            fontSize: 13,
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F8FF),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFDCE7FF)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.phone_in_talk_rounded,
+                      color: Color(0xFF1D63FF),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        phoneNumber,
+                        style: const TextStyle(
+                          color: Color(0xFF0C1D4A),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _ContactActionButton(
+                    label: 'Chat',
+                    icon: const _WhatsAppIcon(size: 20),
+                    color: const Color(0xFF16A34A),
+                    onTap: () => _openExternal('https://wa.me/$phoneNumber'),
+                  ),
+                  _ContactActionButton(
+                    label: 'Call',
+                    icon: const Icon(Icons.call_rounded, size: 19),
+                    color: const Color(0xFF1D63FF),
+                    onTap: () => _openExternal('tel:$phoneNumber'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContactActionButton extends StatelessWidget {
+  const _ContactActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final Widget icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 180,
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        onPressed: onTap,
+        icon: icon,
+        label: Text(label),
+      ),
+    );
+  }
+}
+
+class _WhatsAppIcon extends StatelessWidget {
+  const _WhatsAppIcon({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _WhatsAppIconPainter(),
+      ),
+    );
+  }
+}
+
+class _WhatsAppIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 24;
+    canvas.save();
+    canvas.scale(scale);
+
+    final bubblePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final handsetPaint = Paint()
+      ..color = const Color(0xFF16A34A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.1
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final bubble = Path()
+      ..addOval(const Rect.fromLTWH(3.2, 2.8, 17.6, 17.6))
+      ..moveTo(7.4, 18.4)
+      ..lineTo(4.2, 21.4)
+      ..lineTo(5.2, 16.9)
+      ..close();
+    canvas.drawPath(bubble, bubblePaint);
+
+    final handset = Path()
+      ..moveTo(8.3, 8.0)
+      ..cubicTo(7.5, 9.1, 8.3, 12.3, 11.0, 15.0)
+      ..cubicTo(13.7, 17.7, 16.8, 18.5, 18.0, 17.6)
+      ..lineTo(16.2, 15.4)
+      ..cubicTo(15.8, 15.0, 15.3, 15.0, 14.8, 15.3)
+      ..lineTo(13.7, 15.9)
+      ..cubicTo(12.2, 15.2, 10.8, 13.8, 10.1, 12.3)
+      ..lineTo(10.7, 11.2)
+      ..cubicTo(11.0, 10.7, 11.0, 10.2, 10.6, 9.8)
+      ..lineTo(8.3, 8.0);
+    canvas.drawPath(handset, handsetPaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _HeroSection extends StatelessWidget {
@@ -2109,7 +2394,7 @@ class _SolutionsSection extends StatelessWidget {
         icon: Icons.shopping_cart_outlined,
         iconBg: const Color(0xFF275AE5),
         title: 'LysTing App',
-        subtitle: 'Your local solution app...\ndriven by customer reviews...',
+        subtitle: 'Local solution app',
         bullets: [
           'Food',
           'Products',
@@ -2856,9 +3141,10 @@ class _DetailTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = _detailAccentFor(content.category);
     final narrow = MediaQuery.sizeOf(context).width < 430;
     final title = content.category == FeatureCategory.iot
-        ? 'LysTing Smart IoT'
+        ? 'LysTing IoT'
         : content.kicker;
     final icon = content.category == FeatureCategory.iot
         ? Icons.settings_suggest_rounded
@@ -2875,10 +3161,10 @@ class _DetailTopBar extends StatelessWidget {
           width: narrow ? 38 : 42,
           height: narrow ? 38 : 42,
           decoration: BoxDecoration(
-            color: content.iconColor.withValues(alpha: 0.12),
+            color: accent.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(narrow ? 13 : 14),
           ),
-          child: Icon(icon, color: content.iconColor, size: narrow ? 22 : 24),
+          child: Icon(icon, color: accent, size: narrow ? 22 : 24),
         ),
         SizedBox(width: narrow ? 10 : 12),
         Expanded(
@@ -3299,15 +3585,15 @@ class _CategoryDock extends StatelessWidget {
         return Container(
           padding: EdgeInsets.symmetric(
             horizontal: narrow
-                ? 6
+                ? 5
                 : compact
-                    ? 8
-                    : 14,
-            vertical: narrow
-                ? 6
-                : compact
-                    ? 8
+                    ? 7
                     : 10,
+            vertical: narrow
+                ? 5
+                : compact
+                    ? 7
+                    : 8,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.72),
@@ -3370,6 +3656,8 @@ class _DockPhoneButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = _detailAccentFor(content.category);
+    final deepAccent = _categoryDeepColor(content.category);
     return Semantics(
       button: true,
       selected: selected,
@@ -3387,61 +3675,69 @@ class _DockPhoneButton extends StatelessWidget {
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
               width: narrow
-                  ? 64
+                  ? 56
                   : compact
-                      ? 66
-                      : 86,
+                      ? 60
+                      : 76,
               padding: EdgeInsets.fromLTRB(
                 narrow
                     ? 4
                     : compact
-                        ? 5
-                        : 6,
+                        ? 4
+                        : 5,
                 narrow
                     ? 5
                     : compact
-                        ? 6
-                        : 7,
-                narrow
-                    ? 4
-                    : compact
                         ? 5
                         : 6,
                 narrow
                     ? 4
                     : compact
-                        ? 5
-                        : 6,
+                        ? 4
+                        : 5,
+                narrow
+                    ? 4
+                    : compact
+                        ? 4
+                        : 5,
               ),
               decoration: BoxDecoration(
-                color: selected
-                    ? content.iconColor.withValues(alpha: 0.92)
-                    : const Color(0xFF111827),
+                color: selected ? null : Colors.white,
+                gradient: selected
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          accent,
+                          deepAccent,
+                        ],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(narrow
-                    ? 16
+                    ? 15
                     : compact
-                        ? 18
-                        : 22),
+                        ? 16
+                        : 19),
                 border: Border.all(
                   color: selected
-                      ? content.iconColor.withValues(alpha: 0.5)
-                      : Colors.white,
-                  width: selected ? 3 : 2.5,
+                      ? accent.withValues(alpha: 0.34)
+                      : accent.withValues(alpha: 0.22),
+                  width: selected ? 2.5 : 1.4,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: content.iconColor.withValues(
+                    color: accent.withValues(
                       alpha: selected ? 0.18 : 0.1,
                     ),
-                    blurRadius: selected ? 14 : 10,
-                    offset: const Offset(0, 6),
+                    blurRadius: selected ? 12 : 8,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
               child: AspectRatio(
                 aspectRatio: 0.64,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(compact ? 17 : 21),
+                  borderRadius: BorderRadius.circular(compact ? 15 : 18),
                   child: DecoratedBox(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -3478,7 +3774,7 @@ class _DockPhoneButton extends StatelessWidget {
                         children: [
                           Center(
                             child: Container(
-                              width: compact ? 26 : 34,
+                              width: compact ? 22 : 28,
                               height: narrow
                                   ? 2.2
                                   : compact
@@ -3501,21 +3797,21 @@ class _DockPhoneButton extends StatelessWidget {
                             children: [
                               Container(
                                 width: narrow
-                                    ? 18
+                                    ? 16
                                     : compact
-                                        ? 20
-                                        : 24,
+                                        ? 18
+                                        : 21,
                                 height: narrow
-                                    ? 18
+                                    ? 16
                                     : compact
-                                        ? 20
-                                        : 24,
+                                        ? 18
+                                        : 21,
                                 decoration: BoxDecoration(
-                                  color: content.iconColor,
-                                  borderRadius: BorderRadius.circular(9),
+                                  color: accent,
+                                  borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: content.iconColor.withValues(
+                                      color: accent.withValues(
                                         alpha: 0.24,
                                       ),
                                       blurRadius: 12,
@@ -3527,24 +3823,10 @@ class _DockPhoneButton extends StatelessWidget {
                                   content.icon,
                                   color: Colors.white,
                                   size: narrow
-                                      ? 11
+                                      ? 10
                                       : compact
-                                          ? 12
-                                          : 14,
-                                ),
-                              ),
-                              const Spacer(),
-                              AnimatedOpacity(
-                                duration: const Duration(milliseconds: 180),
-                                opacity: selected ? 1 : 0,
-                                child: Icon(
-                                  Icons.check_circle_rounded,
-                                  color: content.iconColor,
-                                  size: narrow
-                                      ? 11
-                                      : compact
-                                          ? 12
-                                          : 14,
+                                          ? 11
+                                          : 13,
                                 ),
                               ),
                             ],
@@ -3557,29 +3839,33 @@ class _DockPhoneButton extends StatelessWidget {
                             style: TextStyle(
                               color: const Color(0xFF17233F),
                               fontSize: narrow
-                                  ? 7.2
+                                  ? 6.8
                                   : compact
-                                      ? 8.5
-                                      : 9.5,
+                                      ? 7.8
+                                      : 8.8,
                               fontWeight: FontWeight.w900,
                               height: 1.08,
                               letterSpacing: 0,
                             ),
                           ),
                           SizedBox(height: narrow ? 1 : 2),
-                          Text(
-                            _dockSubtitle(content.category),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: content.iconColor,
-                              fontSize: narrow
-                                  ? 6.8
-                                  : compact
-                                      ? 7.5
-                                      : 8.5,
-                              fontWeight: FontWeight.w800,
-                              height: 1.1,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _dockSubtitle(content.category),
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                color: accent,
+                                fontSize: narrow
+                                    ? 6.4
+                                    : compact
+                                        ? 7.0
+                                        : 7.8,
+                                fontWeight: FontWeight.w800,
+                                height: 1.1,
+                              ),
                             ),
                           ),
                         ],
@@ -3599,7 +3885,7 @@ class _DockPhoneButton extends StatelessWidget {
 String _dockSubtitle(FeatureCategory category) {
   return switch (category) {
     FeatureCategory.iot => 'Smart IoT',
-    FeatureCategory.ecommerce => 'Local hub',
+    FeatureCategory.ecommerce => 'LysTing solution app',
     FeatureCategory.b2b => 'Pure B2B',
   };
 }
@@ -3622,7 +3908,7 @@ class _DetailCategoryBody extends StatelessWidget {
         _DetailHero(content: content),
         SizedBox(height: narrow ? 8 : 14),
         if (content.category == FeatureCategory.iot)
-          _AutomationCarousel(color: content.iconColor)
+          _AutomationCarousel(color: _detailAccentFor(content.category))
         else
           _DetailFeatureGrid(content: content),
         if (content.contentSections.isNotEmpty) ...[
@@ -3727,15 +4013,17 @@ class _DetailHero extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final accent = _detailAccentFor(content.category);
         final compact = constraints.maxWidth < 760;
         final narrow = constraints.maxWidth < 390;
         final tight = constraints.maxWidth < 430;
+        final singleLineHeader = constraints.maxWidth >= 640;
         final heroText = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               content.category == FeatureCategory.iot
-                  ? 'LysTing Smart IoT'
+                  ? 'LysTing IoT'
                   : content.title,
               style: TextStyle(
                 color: const Color(0xFF17233F),
@@ -3763,21 +4051,43 @@ class _DetailHero extends StatelessWidget {
 
         final highlights = _DetailHighlights(
           content: content,
+          color: accent,
           singleRow: content.category == FeatureCategory.iot,
         );
+
+        final titleAndHighlights = singleLineHeader
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: constraints.maxWidth >= 900 ? 300 : 230,
+                    child: heroText,
+                  ),
+                  SizedBox(width: constraints.maxWidth >= 900 ? 18 : 10),
+                  Expanded(child: highlights),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  heroText,
+                  SizedBox(height: tight ? 6 : 10),
+                  highlights,
+                ],
+              );
 
         return Container(
           padding: EdgeInsets.symmetric(
             horizontal: narrow
-                ? 10
-                : compact
-                    ? 14
-                    : 18,
-            vertical: narrow
-                ? 8
+                ? 9
                 : compact
                     ? 12
                     : 14,
+            vertical: narrow
+                ? 7
+                : compact
+                    ? 9
+                    : 10,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.82),
@@ -3785,29 +4095,13 @@ class _DetailHero extends StatelessWidget {
             border: Border.all(color: Colors.white.withValues(alpha: 0.82)),
             boxShadow: [
               BoxShadow(
-                color: content.iconColor.withValues(alpha: 0.055),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+                color: accent.withValues(alpha: 0.055),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    heroText,
-                    SizedBox(height: tight ? 6 : 10),
-                    highlights,
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(flex: 6, child: heroText),
-                    const SizedBox(width: 16),
-                    Expanded(flex: 4, child: highlights),
-                  ],
-                ),
+          child: titleAndHighlights,
         );
       },
     );
@@ -3817,10 +4111,12 @@ class _DetailHero extends StatelessWidget {
 class _DetailHighlights extends StatelessWidget {
   const _DetailHighlights({
     required this.content,
+    required this.color,
     this.singleRow = false,
   });
 
   final _FeatureCategoryContent content;
+  final Color color;
   final bool singleRow;
 
   @override
@@ -3829,23 +4125,48 @@ class _DetailHighlights extends StatelessWidget {
     final tight = MediaQuery.sizeOf(context).width < 430;
 
     if (singleRow) {
-      return Row(
-        children: highlights
-            .map(
-              (item) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: item == highlights.last ? 0 : (tight ? 5 : 8),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final stack = constraints.maxWidth < 390;
+          if (stack) {
+            return Column(
+              children: highlights
+                  .map(
+                    (item) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: item == highlights.last ? 0 : 6,
+                      ),
+                      child: _DetailHighlightTile(
+                        item: item,
+                        color: color,
+                        singleRow: true,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: highlights
+                .map(
+                  (item) => Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: item == highlights.last ? 0 : 8,
+                      ),
+                      child: _DetailHighlightTile(
+                        item: item,
+                        color: color,
+                        singleRow: true,
+                      ),
+                    ),
                   ),
-                  child: _DetailHighlightTile(
-                    item: item,
-                    color: content.iconColor,
-                    singleRow: true,
-                  ),
-                ),
-              ),
-            )
-            .toList(),
+                )
+                .toList(),
+          );
+        },
       );
     }
 
@@ -3856,7 +4177,7 @@ class _DetailHighlights extends StatelessWidget {
               padding: EdgeInsets.only(bottom: tight ? 4 : 6),
               child: _DetailHighlightTile(
                 item: item,
-                color: content.iconColor,
+                color: color,
               ),
             ),
           )
@@ -3949,8 +4270,8 @@ class _DetailHighlightTile extends StatelessWidget {
     final tight = MediaQuery.sizeOf(context).width < 430;
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: singleRow ? (tight ? 5 : 7) : (tight ? 8 : 10),
-        vertical: singleRow ? (tight ? 6 : 7) : (tight ? 5 : 8),
+        horizontal: singleRow ? (tight ? 7 : 8) : (tight ? 8 : 10),
+        vertical: singleRow ? (tight ? 7 : 7) : (tight ? 5 : 8),
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
@@ -3962,8 +4283,8 @@ class _DetailHighlightTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: singleRow ? (tight ? 20 : 24) : (tight ? 24 : 30),
-            height: singleRow ? (tight ? 20 : 24) : (tight ? 24 : 30),
+            width: singleRow ? (tight ? 20 : 22) : (tight ? 24 : 30),
+            height: singleRow ? (tight ? 20 : 22) : (tight ? 24 : 30),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
@@ -3971,38 +4292,47 @@ class _DetailHighlightTile extends StatelessWidget {
             child: Icon(
               item.icon,
               color: color,
-              size: singleRow ? (tight ? 12 : 14) : (tight ? 14 : 16),
+              size: singleRow ? (tight ? 12 : 13) : (tight ? 14 : 16),
             ),
           ),
-          SizedBox(width: singleRow ? (tight ? 4 : 6) : (tight ? 7 : 8)),
+          SizedBox(width: singleRow ? (tight ? 4 : 5) : (tight ? 7 : 8)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: const Color(0xFF24314F),
-                    fontSize: singleRow
-                        ? (tight ? 9.2 : 10.2)
-                        : (tight ? 11.4 : 12.5),
-                    height: tight ? 1.05 : 1.1,
-                    fontWeight: FontWeight.w900,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    item.label,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: const Color(0xFF24314F),
+                      fontSize: singleRow
+                          ? (tight ? 10.2 : 11.4)
+                          : (tight ? 11.4 : 12.5),
+                      height: tight ? 1.05 : 1.1,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
                 SizedBox(height: tight ? 0 : 1),
-                Text(
-                  item.supporting,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: const Color(0xFF52617F),
-                    fontSize:
-                        singleRow ? (tight ? 7.8 : 8.8) : (tight ? 9.6 : 10.5),
-                    height: tight ? 1.05 : 1.1,
-                    fontWeight: FontWeight.w700,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    item.supporting,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: const Color(0xFF52617F),
+                      fontSize: singleRow
+                          ? (tight ? 8.6 : 9.7)
+                          : (tight ? 9.6 : 10.5),
+                      height: tight ? 1.05 : 1.1,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -4107,19 +4437,19 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
 
         return Container(
           padding: EdgeInsets.all(narrow
-              ? 12
+              ? 9
               : compact
-                  ? 14
-                  : 16),
+                  ? 11
+                  : 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.94)),
+            color: Colors.white.withValues(alpha: 0.64),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.82)),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withValues(alpha: 0.08),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
+                color: widget.color.withValues(alpha: 0.055),
+                blurRadius: 16,
+                offset: const Offset(0, 7),
               ),
             ],
           ),
@@ -4127,17 +4457,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Automation areas',
-                      style: TextStyle(
-                        color: widget.color,
-                        fontSize: narrow ? 12.5 : 13,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ),
+                  const Spacer(),
                   _CarouselIconButton(
                     icon: Icons.arrow_back_rounded,
                     enabled: _currentPage > 0,
@@ -4151,13 +4471,13 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   ),
                 ],
               ),
-              SizedBox(height: narrow ? 8 : 10),
+              SizedBox(height: narrow ? 6 : 8),
               SizedBox(
                 height: narrow
-                    ? 74
+                    ? 58
                     : compact
-                        ? 88
-                        : 108,
+                        ? 68
+                        : 82,
                 child: PageView.builder(
                   controller: _controller,
                   itemCount: _items.length,
@@ -4176,11 +4496,11 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                       curve: Curves.easeOutCubic,
                       padding: EdgeInsets.symmetric(
                         horizontal: narrow
-                            ? 5
+                            ? 4
                             : compact
-                                ? 7
-                                : 10,
-                        vertical: index == _currentPage ? 0 : 8,
+                                ? 5
+                                : 7,
+                        vertical: index == _currentPage ? 0 : 5,
                       ),
                       child: _AutomationCarouselCard(
                         item: _items[index],
@@ -4203,15 +4523,15 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   },
                 ),
               ),
-              SizedBox(height: narrow ? 8 : 10),
+              SizedBox(height: narrow ? 6 : 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: _items.asMap().entries.map((entry) {
                   final selected = entry.key == _currentPage;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    width: selected ? 24 : 8,
-                    height: 8,
+                    width: selected ? 20 : 7,
+                    height: 7,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
                       color: selected
@@ -4222,7 +4542,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: narrow ? 12 : 16),
+              SizedBox(height: narrow ? 9 : 12),
               _AutomationImagePanel(
                 color: widget.color,
                 assetPath: _assetForAutomationIndex(_selectedAutomationIndex),
@@ -4297,8 +4617,8 @@ class _AutomationCarouselCard extends StatelessWidget {
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
             padding: EdgeInsets.symmetric(
-              horizontal: narrow ? 12 : 16,
-              vertical: narrow ? 10 : 14,
+              horizontal: narrow ? 10 : 12,
+              vertical: narrow ? 8 : 10,
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -4308,68 +4628,74 @@ class _AutomationCarouselCard extends StatelessWidget {
                     ? [color, const Color(0xFF0A1D4A)]
                     : [Colors.white, const Color(0xFFF4F8FF)],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: selected ? color.withValues(alpha: 0.25) : Colors.white,
               ),
               boxShadow: [
                 BoxShadow(
                   color: color.withValues(alpha: selected ? 0.2 : 0.08),
-                  blurRadius: selected ? 18 : 12,
-                  offset: const Offset(0, 8),
+                  blurRadius: selected ? 14 : 9,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: narrow
-                      ? 36
-                      : compact
-                          ? 40
-                          : 44,
-                  height: narrow
-                      ? 36
-                      : compact
-                          ? 40
-                          : 44,
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? Colors.white.withValues(alpha: 0.16)
-                        : color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    item.icon,
-                    color: selected ? Colors.white : color,
-                    size: narrow
-                        ? 19
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: narrow
+                        ? 30
                         : compact
-                            ? 21
-                            : 23,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: selected ? Colors.white : const Color(0xFF17233F),
-                      fontSize: narrow
-                          ? 17
+                            ? 32
+                            : 36,
+                    height: narrow
+                        ? 30
+                        : compact
+                            ? 32
+                            : 36,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? Colors.white.withValues(alpha: 0.16)
+                          : color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      item.icon,
+                      color: selected ? Colors.white : color,
+                      size: narrow
+                          ? 16
                           : compact
                               ? 18
                               : 20,
-                      fontWeight: FontWeight.w900,
-                      height: 1.08,
-                      letterSpacing: 0,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.visible,
+                      softWrap: false,
+                      style: TextStyle(
+                        color:
+                            selected ? Colors.white : const Color(0xFF17233F),
+                        fontSize: narrow
+                            ? 14
+                            : compact
+                                ? 15
+                                : 17,
+                        fontWeight: FontWeight.w900,
+                        height: 1.08,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -4400,21 +4726,21 @@ class _AutomationImagePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFDCE8FF)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x140E2B73),
-            blurRadius: 22,
-            offset: Offset(0, 12),
+            color: Color(0x0F0E2B73),
+            blurRadius: 16,
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(15),
         child: _NativeAutomationTable(
           showFacilities: assetPath.contains('facility_automation'),
           color: color,
@@ -4732,10 +5058,12 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
       builder: (context, constraints) {
         final tight = constraints.maxWidth < 430;
         return Container(
-          padding: EdgeInsets.all(tight ? 10 : 18),
+          padding: EdgeInsets.all(tight ? 9 : 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FBFF),
-            borderRadius: BorderRadius.circular(18),
+            color: widget.color == const Color(0xFF111827)
+                ? const Color(0xFFF5F6F8)
+                : const Color(0xFFF8FBFF),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             children: [
@@ -4746,11 +5074,11 @@ class _SmartHomeNativeTableState extends State<_SmartHomeNativeTable> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: const Color(0xFF0C1D4A),
-                  fontSize: tight ? 20 : 28,
+                  fontSize: tight ? 18 : 24,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              SizedBox(height: tight ? 10 : 18),
+              SizedBox(height: tight ? 8 : 12),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 switchInCurve: Curves.easeOutCubic,
@@ -4800,21 +5128,21 @@ class _SmartHomeAutomationGrid extends StatelessWidget {
         final compact = constraints.maxWidth < 430;
         final columns = compact
             ? 3
-            : constraints.maxWidth >= 980
+            : constraints.maxWidth >= 820
                 ? 5
-                : constraints.maxWidth >= 700
+                : constraints.maxWidth >= 620
                     ? 4
                     : 2;
         return Wrap(
-          spacing: compact ? 7 : 12,
-          runSpacing: compact ? 7 : 12,
+          spacing: compact ? 6 : 9,
+          runSpacing: compact ? 6 : 9,
           children: items
               .map(
                 (row) => SizedBox(
                   width: _gridWidth(
                     constraints.maxWidth,
                     columns,
-                    compact ? 7 : 12,
+                    compact ? 6 : 9,
                   ),
                   child: _AutomationHomeButton(
                     item: row,
@@ -4852,93 +5180,57 @@ class _AutomationHomeButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Ink(
+          height: compact ? 76 : 94,
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 6 : 14,
-            vertical: compact ? 8 : 14,
+            horizontal: compact ? 5 : 9,
+            vertical: compact ? 6 : 9,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: color.withValues(alpha: 0.12)),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.08),
-                blurRadius: 14,
-                offset: const Offset(0, 7),
+                color: color.withValues(alpha: 0.045),
+                blurRadius: 9,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: compact
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(item.icon, color: color, size: 22),
-                    const SizedBox(height: 5),
-                    Text(
-                      item.label,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF0C1D4A),
-                        fontSize: 10,
-                        height: 1.05,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (item.supporting != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        item.supporting!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF52617F),
-                          fontSize: 8.5,
-                          height: 1.05,
-                        ),
-                      ),
-                    ],
-                  ],
-                )
-              : Row(
-                  children: [
-                    Icon(item.icon, color: color, size: 28),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.label,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF0C1D4A),
-                              fontSize: 13,
-                              height: 1.15,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          if (item.supporting != null) ...[
-                            const SizedBox(height: 5),
-                            Text(
-                              item.supporting!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF52617F),
-                                fontSize: 11.5,
-                                height: 1.25,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(item.icon, color: color, size: compact ? 19 : 24),
+              SizedBox(height: compact ? 4 : 6),
+              Text(
+                item.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF0C1D4A),
+                  fontSize: compact ? 9.2 : 11.5,
+                  height: compact ? 1.05 : 1.12,
+                  fontWeight: FontWeight.w900,
                 ),
+              ),
+              if (item.supporting != null) ...[
+                SizedBox(height: compact ? 2 : 4),
+                Text(
+                  item.supporting!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF52617F),
+                    fontSize: compact ? 7.8 : 9.8,
+                    height: compact ? 1.05 : 1.18,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -5592,9 +5884,11 @@ class _EstimatorCustomerPanel extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(tight ? 10 : 18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FBFF),
+        color: color == const Color(0xFF111827)
+            ? const Color(0xFFF4F6F8)
+            : const Color(0xFFF8FBFF),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFDCE8FF)),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5791,6 +6085,7 @@ class _EstimateDraftsPanel extends StatelessWidget {
                 ),
                 child: _EstimateDraftRow(
                   draft: draft,
+                  color: color,
                   tight: tight,
                 ),
               );
@@ -5821,62 +6116,92 @@ class _EstimateDraftsPanel extends StatelessWidget {
 class _EstimateDraftRow extends StatelessWidget {
   const _EstimateDraftRow({
     required this.draft,
+    required this.color,
     required this.tight,
   });
 
   final _EstimateDraftControllers draft;
+  final Color color;
   final bool tight;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          draft.option.title,
-          style: TextStyle(
-            color: const Color(0xFF0C1D4A),
-            fontSize: tight ? 14 : 16,
-            fontWeight: FontWeight.w900,
+    return Container(
+      padding: EdgeInsets.all(tight ? 9 : 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: tight ? 28 : 32,
+                height: tight ? 28 : 32,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(draft.option.icon,
+                    color: color, size: tight ? 16 : 18),
+              ),
+              SizedBox(width: tight ? 8 : 10),
+              Expanded(
+                child: Text(
+                  draft.option.title,
+                  style: TextStyle(
+                    color: const Color(0xFF0C1D4A),
+                    fontSize: tight ? 13 : 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        SizedBox(height: tight ? 7 : 10),
-        Row(
-          children: [
-            Expanded(
-              flex: 5,
-              child: _EstimateTextField(
-                controller: draft.roomController,
-                label: 'Room / Area',
-                hint: draft.option.defaultRoom,
-                tight: tight,
+          SizedBox(height: tight ? 8 : 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 5,
+                child: _EstimateTextField(
+                  controller: draft.roomController,
+                  color: color,
+                  label: 'Room / Area',
+                  hint: draft.option.defaultRoom,
+                  tight: tight,
+                ),
               ),
-            ),
-            SizedBox(width: tight ? 6 : 10),
-            Expanded(
-              flex: 3,
-              child: _EstimateTextField(
-                controller: draft.quantityController,
-                label: 'Qty',
-                hint: draft.option.unitLabel,
-                tight: tight,
-                digitsOnly: true,
+              SizedBox(width: tight ? 6 : 10),
+              Expanded(
+                flex: 3,
+                child: _EstimateTextField(
+                  controller: draft.quantityController,
+                  color: color,
+                  label: 'Qty',
+                  hint: draft.option.unitLabel,
+                  tight: tight,
+                  digitsOnly: true,
+                ),
               ),
-            ),
-            SizedBox(width: tight ? 6 : 10),
-            Expanded(
-              flex: 4,
-              child: _EstimateTextField(
-                controller: draft.unitPriceController,
-                label: 'Unit price',
-                prefix: 'Rs ',
-                tight: tight,
-                digitsOnly: true,
+              SizedBox(width: tight ? 6 : 10),
+              Expanded(
+                flex: 4,
+                child: _EstimateTextField(
+                  controller: draft.unitPriceController,
+                  color: color,
+                  label: 'Unit price',
+                  prefix: 'Rs ',
+                  tight: tight,
+                  digitsOnly: true,
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -5900,40 +6225,22 @@ class _EstimateOptionSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (commercial) {
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final option in options) ...[
-              SizedBox(
-                width: tight ? 112 : 132,
-                child: _EstimateOptionButton(
-                  color: color,
-                  tight: tight,
-                  option: option,
-                  selected: selectedIds.contains(option.id),
-                  onTap: () => onOptionSelected(option),
-                ),
-              ),
-              if (option != options.last) SizedBox(width: tight ? 6 : 10),
-            ],
-          ],
-        ),
-      );
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = tight ? 4 : 3;
+        final columns = tight
+            ? 3
+            : commercial
+                ? constraints.maxWidth >= 760
+                    ? 4
+                    : 3
+                : 3;
         final gap = tight ? 6.0 : 10.0;
         return Wrap(
           spacing: gap,
           runSpacing: gap,
           children: options.map((option) {
             return SizedBox(
-              width:
-                  tight ? _gridWidth(constraints.maxWidth, columns, gap) : 142,
+              width: _gridWidth(constraints.maxWidth, columns, gap),
               child: _EstimateOptionButton(
                 color: color,
                 tight: tight,
@@ -5967,61 +6274,88 @@ class _EstimateOptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
-      child: Ink(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: tight ? 5 : 12,
-          vertical: tight ? 7 : 12,
+          horizontal: tight ? 8 : 10,
+          vertical: tight ? 8 : 10,
         ),
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(tight ? 11 : 14),
+          color: selected
+              ? color.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? color.withValues(alpha: 0.35)
-                : color.withValues(alpha: 0.1),
+                ? color.withValues(alpha: 0.42)
+                : color.withValues(alpha: 0.08),
           ),
           boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: selected ? 0.12 : 0.045),
-              blurRadius: tight ? 8 : 12,
-              offset: Offset(0, tight ? 3 : 6),
-            ),
+            if (selected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.12),
+                blurRadius: tight ? 8 : 12,
+                offset: Offset(0, tight ? 3 : 5),
+              ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(option.icon, color: color, size: tight ? 18 : 22),
-                if (selected)
-                  Positioned(
-                    right: -8,
-                    top: -7,
-                    child: Icon(
-                      Icons.check_circle_rounded,
-                      color: color,
-                      size: tight ? 12 : 14,
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(option.icon, color: color, size: tight ? 18 : 22),
+                  SizedBox(height: tight ? 4 : 8),
+                  Text(
+                    option.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xFF0C1D4A),
+                      fontSize: tight ? 8.7 : 12,
+                      height: tight ? 1.05 : 1.15,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-              ],
-            ),
-            SizedBox(height: tight ? 4 : 8),
-            Text(
-              option.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: const Color(0xFF0C1D4A),
-                fontSize: tight ? 8.7 : 12,
-                height: tight ? 1.05 : 1.15,
-                fontWeight: FontWeight.w900,
+                ],
               ),
             ),
+            if (selected)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: tight ? 16 : 18,
+                  height: tight ? 16 : 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.22),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.18),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: color,
+                    size: tight ? 14 : 16,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -6106,6 +6440,7 @@ class _FacilityDropdown extends StatelessWidget {
 class _EstimateTextField extends StatelessWidget {
   const _EstimateTextField({
     required this.controller,
+    required this.color,
     required this.label,
     required this.tight,
     this.hint,
@@ -6114,6 +6449,7 @@ class _EstimateTextField extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final Color color;
   final String label;
   final bool tight;
   final String? hint;
@@ -6127,17 +6463,47 @@ class _EstimateTextField extends StatelessWidget {
       keyboardType: digitsOnly ? TextInputType.number : TextInputType.text,
       inputFormatters:
           digitsOnly ? [FilteringTextInputFormatter.digitsOnly] : null,
-      style: TextStyle(fontSize: tight ? 11 : null),
+      style: TextStyle(
+        color: const Color(0xFF0C1D4A),
+        fontSize: tight ? 11 : 13,
+        fontWeight: FontWeight.w700,
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         prefixText: prefix,
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: tight ? 7 : 10,
-          vertical: tight ? 8 : 12,
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: TextStyle(
+          color: const Color(0xFF64748B),
+          fontSize: tight ? 10 : 11.5,
+          fontWeight: FontWeight.w700,
         ),
-        border: const OutlineInputBorder(),
+        hintStyle: TextStyle(
+          color: const Color(0xFF94A3B8),
+          fontSize: tight ? 10 : 11.5,
+          fontWeight: FontWeight.w600,
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: tight ? 8 : 11,
+          vertical: tight ? 9 : 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.12)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.12)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: color.withValues(alpha: 0.5),
+            width: 1.4,
+          ),
+        ),
       ),
     );
   }
