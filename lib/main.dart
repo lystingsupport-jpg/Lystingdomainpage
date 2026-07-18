@@ -2394,7 +2394,7 @@ class _SolutionsSection extends StatelessWidget {
         icon: Icons.shopping_cart_outlined,
         iconBg: const Color(0xFF275AE5),
         title: 'LysTing App',
-        subtitle: 'Local solution app',
+        subtitle: 'Your local solution hub',
         bullets: [
           'Food',
           'Products',
@@ -3885,7 +3885,7 @@ class _DockPhoneButton extends StatelessWidget {
 String _dockSubtitle(FeatureCategory category) {
   return switch (category) {
     FeatureCategory.iot => 'Smart IoT',
-    FeatureCategory.ecommerce => 'LysTing solution app',
+    FeatureCategory.ecommerce => 'Your local solution hub',
     FeatureCategory.b2b => 'Pure B2B',
   };
 }
@@ -6241,6 +6241,7 @@ class _EstimateDraftRow extends StatelessWidget {
                   prefix: 'Rs ',
                   tight: tight,
                   digitsOnly: true,
+                  readOnly: true,
                 ),
               ),
             ],
@@ -6493,6 +6494,7 @@ class _EstimateTextField extends StatelessWidget {
     this.hint,
     this.prefix,
     this.digitsOnly = false,
+    this.readOnly = false,
   });
 
   final TextEditingController controller;
@@ -6502,11 +6504,15 @@ class _EstimateTextField extends StatelessWidget {
   final String? hint;
   final String? prefix;
   final bool digitsOnly;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      readOnly: readOnly,
+      enableInteractiveSelection: !readOnly,
+      showCursor: !readOnly,
       keyboardType: digitsOnly ? TextInputType.number : TextInputType.text,
       inputFormatters:
           digitsOnly ? [FilteringTextInputFormatter.digitsOnly] : null,
@@ -6521,7 +6527,7 @@ class _EstimateTextField extends StatelessWidget {
         prefixText: prefix,
         isDense: true,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: readOnly ? const Color(0xFFF3F5F8) : Colors.white,
         labelStyle: TextStyle(
           color: const Color(0xFF64748B),
           fontSize: tight ? 10 : 11.5,
