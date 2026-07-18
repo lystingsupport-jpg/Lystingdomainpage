@@ -3147,7 +3147,7 @@ class _DetailTopBar extends StatelessWidget {
         ? 'LysTing IoT'
         : content.kicker;
     final icon = content.category == FeatureCategory.iot
-        ? Icons.settings_suggest_rounded
+        ? Icons.sensors_rounded
         : content.icon;
     return Row(
       children: [
@@ -4147,21 +4147,17 @@ class _DetailHighlights extends StatelessWidget {
             );
           }
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          return Wrap(
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: highlights
                 .map(
-                  (item) => Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: item == highlights.last ? 0 : 8,
-                      ),
-                      child: _DetailHighlightTile(
-                        item: item,
-                        color: color,
-                        singleRow: true,
-                      ),
-                    ),
+                  (item) => _DetailHighlightTile(
+                    item: item,
+                    color: color,
+                    singleRow: true,
                   ),
                 )
                 .toList(),
@@ -4281,6 +4277,7 @@ class _DetailHighlightTile extends StatelessWidget {
         ),
       ),
       child: Row(
+        mainAxisSize: singleRow ? MainAxisSize.min : MainAxisSize.max,
         children: [
           Container(
             width: singleRow ? (tight ? 20 : 22) : (tight ? 24 : 30),
@@ -4296,8 +4293,8 @@ class _DetailHighlightTile extends StatelessWidget {
             ),
           ),
           SizedBox(width: singleRow ? (tight ? 4 : 5) : (tight ? 7 : 8)),
-          Expanded(
-            child: Column(
+          if (singleRow)
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 FittedBox(
@@ -4309,9 +4306,7 @@ class _DetailHighlightTile extends StatelessWidget {
                     softWrap: false,
                     style: TextStyle(
                       color: const Color(0xFF24314F),
-                      fontSize: singleRow
-                          ? (tight ? 10.2 : 11.4)
-                          : (tight ? 11.4 : 12.5),
+                      fontSize: tight ? 10.2 : 11.4,
                       height: tight ? 1.05 : 1.1,
                       fontWeight: FontWeight.w900,
                     ),
@@ -4327,17 +4322,57 @@ class _DetailHighlightTile extends StatelessWidget {
                     softWrap: false,
                     style: TextStyle(
                       color: const Color(0xFF52617F),
-                      fontSize: singleRow
-                          ? (tight ? 8.6 : 9.7)
-                          : (tight ? 9.6 : 10.5),
+                      fontSize: tight ? 8.6 : 9.7,
                       height: tight ? 1.05 : 1.1,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
+            )
+          else
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      item.label,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        color: const Color(0xFF24314F),
+                        fontSize: singleRow
+                            ? (tight ? 10.2 : 11.4)
+                            : (tight ? 11.4 : 12.5),
+                        height: tight ? 1.05 : 1.1,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: tight ? 0 : 1),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      item.supporting,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        color: const Color(0xFF52617F),
+                        fontSize: singleRow
+                            ? (tight ? 8.6 : 9.7)
+                            : (tight ? 9.6 : 10.5),
+                        height: tight ? 1.05 : 1.1,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -4402,7 +4437,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
     ),
     _AutomationCarouselItem(
       icon: Icons.apartment_rounded,
-      title: 'Commercial Building',
+      title: 'Smart Commercial Automation',
       subtitle: '',
     ),
   ];
@@ -4421,10 +4456,20 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
 
   void _goTo(int page) {
     final target = page.clamp(0, _items.length - 1);
+    if (target == _currentPage) {
+      return;
+    }
+    setState(() {
+      _currentPage = target;
+      _selectedAutomationIndex = target;
+      if (target == 0) {
+        _selectedCommercialItem = null;
+      }
+    });
     _controller.animateToPage(
       target,
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOut,
     );
   }
 
@@ -4480,20 +4525,23 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                         : 82,
                 child: PageView.builder(
                   controller: _controller,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: _items.length,
                   onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                      _selectedAutomationIndex = index;
-                      if (index == 0) {
-                        _selectedCommercialItem = null;
-                      }
-                    });
+                    if (index != _currentPage) {
+                      setState(() {
+                        _currentPage = index;
+                        _selectedAutomationIndex = index;
+                        if (index == 0) {
+                          _selectedCommercialItem = null;
+                        }
+                      });
+                    }
                   },
                   itemBuilder: (context, index) {
                     return AnimatedPadding(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
+                      duration: const Duration(milliseconds: 120),
+                      curve: Curves.easeOut,
                       padding: EdgeInsets.symmetric(
                         horizontal: narrow
                             ? 4
@@ -4508,16 +4556,7 @@ class _AutomationCarouselState extends State<_AutomationCarousel> {
                         selected: index == _currentPage,
                         compact: compact,
                         narrow: narrow,
-                        onTap: () {
-                          setState(() {
-                            _currentPage = index;
-                            _selectedAutomationIndex = index;
-                            if (index == 0) {
-                              _selectedCommercialItem = null;
-                            }
-                          });
-                          _goTo(index);
-                        },
+                        onTap: () => _goTo(index),
                       ),
                     );
                   },
@@ -6095,6 +6134,12 @@ class _EstimateDraftsPanel extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF111827),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(
+                  0xFF111827,
+                ).withValues(alpha: 0.34),
+                disabledForegroundColor: Colors.white.withValues(alpha: 0.72),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.symmetric(
                   horizontal: tight ? 10 : 14,
@@ -6273,6 +6318,7 @@ class _EstimateOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const iotButtonColor = Color(0xFF111827);
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -6284,19 +6330,16 @@ class _EstimateOptionButton extends StatelessWidget {
           vertical: tight ? 8 : 10,
         ),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.12)
-              : Colors.white.withValues(alpha: 0.72),
+          color:
+              selected ? iotButtonColor : Colors.white.withValues(alpha: 0.72),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected
-                ? color.withValues(alpha: 0.42)
-                : color.withValues(alpha: 0.08),
+            color: selected ? iotButtonColor : color.withValues(alpha: 0.08),
           ),
           boxShadow: [
             if (selected)
               BoxShadow(
-                color: color.withValues(alpha: 0.12),
+                color: iotButtonColor.withValues(alpha: 0.18),
                 blurRadius: tight ? 8 : 12,
                 offset: Offset(0, tight ? 3 : 5),
               ),
@@ -6310,7 +6353,11 @@ class _EstimateOptionButton extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(option.icon, color: color, size: tight ? 18 : 22),
+                  Icon(
+                    option.icon,
+                    color: selected ? Colors.white : color,
+                    size: tight ? 18 : 22,
+                  ),
                   SizedBox(height: tight ? 4 : 8),
                   Text(
                     option.title,
@@ -6318,7 +6365,7 @@ class _EstimateOptionButton extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: const Color(0xFF0C1D4A),
+                      color: selected ? Colors.white : const Color(0xFF0C1D4A),
                       fontSize: tight ? 8.7 : 12,
                       height: tight ? 1.05 : 1.15,
                       fontWeight: FontWeight.w900,
@@ -6338,12 +6385,12 @@ class _EstimateOptionButton extends StatelessWidget {
                     color: Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: color.withValues(alpha: 0.22),
+                      color: Colors.white.withValues(alpha: 0.18),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withValues(alpha: 0.18),
+                        color: Colors.black.withValues(alpha: 0.24),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -6351,7 +6398,7 @@ class _EstimateOptionButton extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.check_circle_rounded,
-                    color: color,
+                    color: iotButtonColor,
                     size: tight ? 14 : 16,
                   ),
                 ),
@@ -6921,19 +6968,13 @@ class _FacilityAutomationTable extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            'Facility Automation Requirements',
+            'Smart Commercial Automation',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Color(0xFF0C1D4A),
               fontSize: 28,
               fontWeight: FontWeight.w900,
             ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'IoT automation use cases by commercial and community facility type',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF52617F), fontSize: 13),
           ),
           const SizedBox(height: 18),
           ...rows.map(
