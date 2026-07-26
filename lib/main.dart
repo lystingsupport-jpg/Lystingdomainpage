@@ -3983,7 +3983,6 @@ class _LysBookAppsPanel extends StatelessWidget {
   const _LysBookAppsPanel();
 
   static const _accent = Color(0xFF0F9D8A);
-  static const _keyboardUiUrl = 'http://127.0.0.1:7358/';
 
   @override
   Widget build(BuildContext context) {
@@ -4024,7 +4023,12 @@ class _LysBookAppsPanel extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(22),
-                onTap: () => navigateToUrl(_keyboardUiUrl),
+                onTap: () => navigateToUrl(
+                  Uri.base.host == '127.0.0.1' ||
+                          Uri.base.host == 'localhost'
+                      ? 'http://127.0.0.1:7358/'
+                      : 'https://keyboard-ui-notes.pages.dev/',
+                ),
                 child: Ink(
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
