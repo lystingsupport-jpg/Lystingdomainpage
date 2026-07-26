@@ -285,6 +285,23 @@ class _LandingPageState extends State<LandingPage> {
   _DesignTuning _design = const _DesignTuning();
   bool _showDesignPanel = false;
 
+  @override
+  void initState() {
+    super.initState();
+    if (shouldOpenLysBookApps()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const FeatureDetailScreen(
+              category: FeatureCategory.lysbook,
+            ),
+          ),
+        );
+      });
+    }
+  }
+
   void _showContactDialog() {
     showDialog<void>(
       context: context,
@@ -524,7 +541,7 @@ EdgeInsets _responsivePagePadding(
   return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
 }
 
-enum FeatureCategory { iot, ecommerce, b2b }
+enum FeatureCategory { iot, ecommerce, b2b, lysbook }
 
 class _FeatureCategoryContent {
   const _FeatureCategoryContent({
@@ -658,6 +675,16 @@ const _featureCategoryContent = {
     heroPoints: [],
     featureGroups: [],
   ),
+  FeatureCategory.lysbook: _FeatureCategoryContent(
+    category: FeatureCategory.lysbook,
+    icon: Icons.menu_book_rounded,
+    iconColor: Color(0xFF0F9D8A),
+    title: 'Page Under Construction',
+    kicker: 'LysBook',
+    summary: 'Discover trusted local businesses, products, and services in one place.',
+    heroPoints: [],
+    featureGroups: [],
+  ),
 };
 
 _FeatureCategoryContent _contentFor(FeatureCategory category) {
@@ -669,6 +696,7 @@ Color _categoryDeepColor(FeatureCategory category) {
     FeatureCategory.iot => const Color(0xFF061833),
     FeatureCategory.ecommerce => const Color(0xFF0D3FAE),
     FeatureCategory.b2b => const Color(0xFF4C1D95),
+    FeatureCategory.lysbook => const Color(0xFF087F70),
   };
 }
 
@@ -677,6 +705,7 @@ Color _detailAccentFor(FeatureCategory category) {
     FeatureCategory.iot => const Color(0xFF111827),
     FeatureCategory.ecommerce => const Color(0xFF1D63FF),
     FeatureCategory.b2b => const Color(0xFF7C3AED),
+    FeatureCategory.lysbook => const Color(0xFF0F9D8A),
   };
 }
 
@@ -2428,11 +2457,23 @@ class _SolutionsSection extends StatelessWidget {
         accent: const Color(0xFF7C3AED),
         visual: const _TowerVisual(),
       ),
+      _SolutionCardData(
+        category: FeatureCategory.lysbook,
+        icon: Icons.menu_book_rounded,
+        iconBg: const Color(0xFF0F9D8A),
+        title: 'LysBook',
+        subtitle: 'Education app',
+        bullets: [
+          'Keyboard UI Notes Taker',
+        ],
+        accent: const Color(0xFF0F9D8A),
+        visual: const _CartVisual(),
+      ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const columns = 3;
+        final columns = items.length;
 
         final useFixedMobileRow = fitMobileRow;
         const dotGap = 8.0;
@@ -2450,9 +2491,14 @@ class _SolutionsSection extends StatelessWidget {
         final preferredCardHeight =
             (cardWidth / AppDesign.solutionPhoneAspectRatio)
                 .clamp(190.0, preferredCardMaxHeight);
-        final cardHeight = maxCardHeight == null
+        final calculatedCardHeight = maxCardHeight == null
             ? (useFixedMobileRow ? preferredCardHeight : null)
             : maxCardHeight!.clamp(190.0, preferredCardHeight);
+        final cardHeight = constraints.maxWidth >= 760
+            ? (calculatedCardHeight != null && calculatedCardHeight > 450
+                ? calculatedCardHeight
+                : 450.0)
+            : calculatedCardHeight;
         final cards = items
             .map(
               (item) => SizedBox(
@@ -2472,10 +2518,9 @@ class _SolutionsSection extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (useFixedMobileRow)
-              SizedBox(
-                height: cardHeight,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     for (var index = 0; index < cards.length; index++) ...[
                       if (index > 0) SizedBox(width: design.solutionPhoneGap),
@@ -2491,11 +2536,13 @@ class _SolutionsSection extends StatelessWidget {
                 runSpacing: AppDesign.solutionPhoneRunGap,
                 children: cards,
               ),
-            SizedBox(height: dotGap),
-            _CarouselDots(
-              count: (items.length / columns).ceil(),
-              activeIndex: 0,
-            ),
+            if ((items.length / columns).ceil() > 1) ...[
+              SizedBox(height: dotGap),
+              _CarouselDots(
+                count: (items.length / columns).ceil(),
+                activeIndex: 0,
+              ),
+            ],
           ],
         );
       },
@@ -2785,24 +2832,31 @@ class _SolutionCard extends StatelessWidget {
                                           ),
                                           child: Row(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                width: bulletDotSize,
-                                                height: bulletDotSize,
-                                                decoration: BoxDecoration(
-                                                  color: data.accent,
-                                                  shape: BoxShape.circle,
+                                              Padding(
+                                                padding: EdgeInsets.only(
+                                                  top: (bulletTextSize * 1.2 -
+                                                          bulletDotSize) /
+                                                      2,
+                                                ),
+                                                child: Container(
+                                                  width: bulletDotSize,
+                                                  height: bulletDotSize,
+                                                  decoration: BoxDecoration(
+                                                    color: data.accent,
+                                                    shape: BoxShape.circle,
+                                                  ),
                                                 ),
                                               ),
                                               SizedBox(width: 8 * scale),
                                               Expanded(
                                                 child: Text(
                                                   bullet,
-                                                  maxLines: 1,
-                                                  softWrap: false,
+                                                  maxLines: 2,
+                                                  softWrap: true,
                                                   overflow:
-                                                      TextOverflow.visible,
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: design
                                                         .solutionBulletColor,
@@ -3576,6 +3630,7 @@ class _CategoryDock extends StatelessWidget {
       FeatureCategory.iot,
       FeatureCategory.ecommerce,
       FeatureCategory.b2b,
+      FeatureCategory.lysbook,
     ];
 
     return LayoutBuilder(
@@ -3887,6 +3942,7 @@ String _dockSubtitle(FeatureCategory category) {
     FeatureCategory.iot => 'Smart IoT',
     FeatureCategory.ecommerce => 'Your local solution hub',
     FeatureCategory.b2b => 'Pure B2B',
+    FeatureCategory.lysbook => 'Education app',
   };
 }
 
@@ -3898,6 +3954,9 @@ class _DetailCategoryBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < 430;
+    if (content.category == FeatureCategory.lysbook) {
+      return const _LysBookAppsPanel();
+    }
     if (content.category == FeatureCategory.ecommerce ||
         content.category == FeatureCategory.b2b) {
       return _UnderConstructionPanel(color: content.iconColor);
@@ -3916,6 +3975,125 @@ class _DetailCategoryBody extends StatelessWidget {
           _DetailContentSections(content: content),
         ],
       ],
+    );
+  }
+}
+
+class _LysBookAppsPanel extends StatelessWidget {
+  const _LysBookAppsPanel();
+
+  static const _accent = Color(0xFF0F9D8A);
+  static const _keyboardUiUrl = 'http://127.0.0.1:7358/';
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 600;
+    return Container(
+      width: double.infinity,
+      constraints: BoxConstraints(minHeight: compact ? 420 : 520),
+      padding: EdgeInsets.all(compact ? 20 : 32),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF2FF).withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'LysBook Apps',
+            style: TextStyle(
+              color: Color(0xFF17233F),
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Choose an app to continue.',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: compact ? 22 : 30),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 340),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(22),
+                onTap: () => navigateToUrl(_keyboardUiUrl),
+                child: Ink(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: _accent.withValues(alpha: 0.2),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0F172A)
+                            .withValues(alpha: 0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: _accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(17),
+                        ),
+                        child: const Icon(
+                          Icons.piano_rounded,
+                          color: _accent,
+                          size: 31,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keyboard UI',
+                              style: TextStyle(
+                                color: Color(0xFF17233F),
+                                fontSize: 19,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Keyboard UI Notes Taker',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: _accent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -4245,6 +4423,23 @@ List<_DetailHighlightItem> _detailHighlightItems(FeatureCategory category) {
           icon: Icons.groups_2_rounded,
           label: 'Agent Search',
           supporting: 'Product-based matching',
+        ),
+      ],
+    FeatureCategory.lysbook => const [
+        _DetailHighlightItem(
+          icon: Icons.storefront_rounded,
+          label: 'Local Businesses',
+          supporting: 'Trusted nearby listings',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.category_rounded,
+          label: 'Products & Services',
+          supporting: 'Browse by category',
+        ),
+        _DetailHighlightItem(
+          icon: Icons.search_rounded,
+          label: 'Easy Discovery',
+          supporting: 'Find what you need',
         ),
       ],
   };
