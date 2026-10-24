@@ -1,8 +1,11 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'design_config.dart';
 import 'external_launcher.dart';
+import 'app_availability.dart';
 
 void main() {
   runApp(const LysTingApp());
@@ -331,6 +334,10 @@ class _LandingPageState extends State<LandingPage> {
                       design: _design,
                       onContactTap: _showContactDialog,
                       onCategorySelected: (category) {
+                        if (category == FeatureCategory.ecommerce) {
+                          openLysTingAndroid(context);
+                          return;
+                        }
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => FeatureDetailScreen(
@@ -346,19 +353,20 @@ class _LandingPageState extends State<LandingPage> {
                 },
               ),
             ),
-            _DesignPanel(
-              design: _design,
-              expanded: _showDesignPanel,
-              onToggle: () {
-                setState(() => _showDesignPanel = !_showDesignPanel);
-              },
-              onReset: () {
-                setState(() => _design = const _DesignTuning());
-              },
-              onChanged: (design) {
-                setState(() => _design = design);
-              },
-            ),
+            if (const bool.fromEnvironment('LYSTING_DESIGN_TOOLS'))
+              _DesignPanel(
+                design: _design,
+                expanded: _showDesignPanel,
+                onToggle: () {
+                  setState(() => _showDesignPanel = !_showDesignPanel);
+                },
+                onReset: () {
+                  setState(() => _design = const _DesignTuning());
+                },
+                onChanged: (design) {
+                  setState(() => _design = design);
+                },
+              ),
           ],
         ),
       ),
@@ -366,7 +374,7 @@ class _LandingPageState extends State<LandingPage> {
   }
 }
 
-class _LandingContent extends StatelessWidget {
+class _LandingContent extends StatefulWidget {
   const _LandingContent({
     required this.design,
     required this.onContactTap,
@@ -378,6 +386,12 @@ class _LandingContent extends StatelessWidget {
   final ValueChanged<FeatureCategory> onCategorySelected;
 
   @override
+  State<_LandingContent> createState() => _LandingContentState();
+}
+
+class _LandingContentState extends State<_LandingContent> {
+  bool _mobileView = false;
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -385,145 +399,87 @@ class _LandingContent extends StatelessWidget {
         final viewportHeight = constraints.hasBoundedHeight
             ? constraints.maxHeight
             : mediaSize.height;
-        final metrics = _LandingViewportMetrics.from(
-          width: constraints.maxWidth,
-          height: viewportHeight,
-        );
-        final page = SingleChildScrollView(
-          primary: true,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: viewportHeight),
-            child: Padding(
-              padding: EdgeInsets.only(bottom: metrics.bottomSafeGap),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: _responsivePagePadding(
-                      context,
-                      vertical: metrics.navVerticalPadding,
-                    ),
-                    child: _TopNavigation(
-                      design: design,
-                      onContactTap: onContactTap,
-                    ),
-                  ),
-                  Padding(
-                    padding: _responsivePagePadding(context, vertical: 0),
-                    child: _SectionShell(
-                      child: SizedBox(
-                        height: metrics.sectionHeight,
-                        child: Column(
-                          children: [
-                            _HeroSection(
-                              design: design,
-                              maxHeight: metrics.heroHeight,
-                            ),
-                            SizedBox(height: metrics.heroCardsGap),
-                            _SolutionsSection(
-                              design: design,
-                              onCategorySelected: onCategorySelected,
-                              fitMobileRow: metrics.fitMobileRow,
-                              maxCardHeight: metrics.cardHeight,
-                            ),
-                            const Spacer(),
-                            const _DownloadSection(compact: true),
-                            SizedBox(height: metrics.downloadStatsGap),
-                            const _StatsSection(compact: true),
-                          ],
-                        ),
+        final compact = constraints.maxWidth < 640;
+        final gap = viewportHeight < 450 ? 6.0 : 10.0;
+        final heroHeight = (viewportHeight * 0.13).clamp(58.0, 108.0);
+        final page = Padding(
+          padding: _responsivePagePadding(context, vertical: gap),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _TopNavigation(
+                design: widget.design,
+                onContactTap: widget.onContactTap,
+                onCategorySelected: widget.onCategorySelected,
+              ),
+              SizedBox(height: gap),
+              SizedBox(
+                height: heroHeight,
+                child:
+                    _HeroSection(design: widget.design, maxHeight: heroHeight),
+              ),
+              SizedBox(height: gap),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  height: 36,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SegmentedButton<bool>(
+                      showSelectedIcon: false,
+                      style: SegmentedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600),
+                        selectedBackgroundColor: const Color(0xFF1E66FF),
+                        selectedForegroundColor: Colors.white,
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF475569),
                       ),
+                      segments: const [
+                        ButtonSegment(
+                            value: true,
+                            icon: _BrandSymbol(kind: 'phone', size: 16),
+                            label: Text('Mobile view')),
+                        ButtonSegment(
+                            value: false,
+                            icon: _BrandSymbol(kind: 'grid', size: 16),
+                            label: Text('Cards view')),
+                      ],
+                      selected: {_mobileView},
+                      onSelectionChanged: (value) =>
+                          setState(() => _mobileView = value.first),
                     ),
                   ),
+                ),
+              ),
+              SizedBox(height: gap),
+              Flexible(
+                fit: FlexFit.loose,
+                child: LayoutBuilder(builder: (context, cardConstraints) {
+                  return _SolutionsSection(
+                    design: widget.design,
+                    onCategorySelected: widget.onCategorySelected,
+                    fitMobileRow: _mobileView,
+                    maxCardHeight: cardConstraints.maxHeight,
+                  );
+                }),
+              ),
+              SizedBox(height: gap),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _DownloadSection(compact: compact),
+                  SizedBox(height: gap),
+                  const _StatsSection(compact: true),
                 ],
               ),
-            ),
+            ],
           ),
         );
 
         return page;
       },
-    );
-  }
-}
-
-class _LandingViewportMetrics {
-  const _LandingViewportMetrics({
-    required this.navVerticalPadding,
-    required this.sectionHeight,
-    required this.heroHeight,
-    required this.heroCardsGap,
-    required this.cardHeight,
-    required this.fitMobileRow,
-    required this.downloadStatsGap,
-    required this.bottomSafeGap,
-  });
-
-  final double navVerticalPadding;
-  final double sectionHeight;
-  final double heroHeight;
-  final double heroCardsGap;
-  final double cardHeight;
-  final bool fitMobileRow;
-  final double downloadStatsGap;
-  final double bottomSafeGap;
-
-  static _LandingViewportMetrics from({
-    required double width,
-    required double height,
-  }) {
-    final mobile = width < 900;
-    final narrow = width < 520;
-    final navVerticalPadding = mobile ? 10.0 : 16.0;
-    final horizontalPadding = width < 420
-        ? AppDesign.pagePaddingMobile
-        : width < 760
-            ? AppDesign.pagePaddingTablet
-            : AppDesign.pagePaddingDesktop;
-    final contentWidth = (width - horizontalPadding * 2).clamp(
-      280.0,
-      double.infinity,
-    );
-    final bottomSafeGap = mobile ? 8.0 : 12.0;
-    final navHeight = mobile ? 64.0 : 72.0;
-    final sectionHeight =
-        (height - navHeight - navVerticalPadding * 2 - bottomSafeGap)
-            .clamp(520.0, height);
-
-    final bottomBandHeight = width < 520
-        ? 118.0
-        : width < 900
-            ? 132.0
-            : 138.0;
-    final heroCardsGap = mobile ? 8.0 : AppDesign.sectionGap;
-    final downloadStatsGap = width < 640 ? 8.0 : 10.0;
-    final dotHeight = 16.0;
-    final heroHeight = (sectionHeight * (mobile ? 0.18 : 0.17))
-        .clamp(mobile ? 78.0 : 92.0, mobile ? 102.0 : 118.0);
-    final availableForCards = sectionHeight -
-        heroHeight -
-        heroCardsGap -
-        bottomBandHeight -
-        downloadStatsGap -
-        dotHeight;
-    final columnsWidth =
-        _gridWidth(contentWidth, 3, AppDesign.solutionPhoneGap);
-    final naturalCardHeight = columnsWidth / AppDesign.solutionPhoneAspectRatio;
-    final maxCardHeight = mobile ? 320.0 : 440.0;
-    final minCardHeight = narrow ? 210.0 : 190.0;
-    final cardHeight = availableForCards.clamp(
-      minCardHeight,
-      naturalCardHeight.clamp(minCardHeight, mobile ? maxCardHeight : 580.0),
-    );
-
-    return _LandingViewportMetrics(
-      navVerticalPadding: navVerticalPadding,
-      sectionHeight: sectionHeight,
-      heroHeight: heroHeight,
-      heroCardsGap: heroCardsGap,
-      cardHeight: cardHeight,
-      fitMobileRow: true,
-      downloadStatsGap: downloadStatsGap,
-      bottomSafeGap: bottomSafeGap,
     );
   }
 }
@@ -681,7 +637,8 @@ const _featureCategoryContent = {
     iconColor: Color(0xFF0F9D8A),
     title: 'Page Under Construction',
     kicker: 'LysBook',
-    summary: 'Discover trusted local businesses, products, and services in one place.',
+    summary:
+        'Discover trusted local businesses, products, and services in one place.',
     heroPoints: [],
     featureGroups: [],
   ),
@@ -1651,10 +1608,12 @@ class _TopNavigation extends StatelessWidget {
   const _TopNavigation({
     required this.design,
     required this.onContactTap,
+    required this.onCategorySelected,
   });
 
   final _DesignTuning design;
   final VoidCallback onContactTap;
+  final ValueChanged<FeatureCategory> onCategorySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -1665,10 +1624,8 @@ class _TopNavigation extends StatelessWidget {
 
           return Container(
             padding: EdgeInsets.symmetric(
-              horizontal:
-                  compact ? design.navCompactPaddingX : design.navPaddingX,
-              vertical:
-                  compact ? design.navCompactPaddingY : design.navPaddingY,
+              horizontal: compact ? 8.0 : design.navPaddingX,
+              vertical: compact ? 4.0 : design.navPaddingY,
             ),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.74),
@@ -1687,7 +1644,10 @@ class _TopNavigation extends StatelessWidget {
             child: compact
                 ? Row(
                     children: [
-                      Expanded(child: _BrandLockup(design: design)),
+                      Expanded(
+                          child: _BrandLockup(
+                              design: design,
+                              onCategorySelected: onCategorySelected)),
                       _PrimaryButton(
                         label: 'Contact Us',
                         design: design,
@@ -1697,8 +1657,10 @@ class _TopNavigation extends StatelessWidget {
                   )
                 : Row(
                     children: [
-                      _BrandLockup(design: design),
-                      const Spacer(),
+                      Expanded(
+                          child: _BrandLockup(
+                              design: design,
+                              onCategorySelected: onCategorySelected)),
                       _PrimaryButton(
                         label: 'Contact Us',
                         design: design,
@@ -1714,9 +1676,10 @@ class _TopNavigation extends StatelessWidget {
 }
 
 class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({required this.design});
+  const _BrandLockup({required this.design, required this.onCategorySelected});
 
   final _DesignTuning design;
+  final ValueChanged<FeatureCategory> onCategorySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -1724,16 +1687,29 @@ class _BrandLockup extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Icon(
-          Icons.menu_rounded,
-          color: AppDesign.brandTitleColor,
-          size: AppDesign.brandIconGlyphSize,
+        PopupMenuButton<FeatureCategory>(
+          tooltip: 'Explore LysTing',
+          onSelected: onCategorySelected,
+          icon:
+              const Icon(Icons.menu_rounded, color: AppDesign.brandTitleColor),
+          itemBuilder: (_) => const [
+            PopupMenuItem(
+                value: FeatureCategory.iot, child: Text('LysTing Smart IoT')),
+            PopupMenuItem(
+                value: FeatureCategory.ecommerce, child: Text('LysTing App')),
+            PopupMenuItem(value: FeatureCategory.b2b, child: Text('LysMart')),
+            PopupMenuItem(
+                value: FeatureCategory.lysbook, child: Text('LysBook')),
+          ],
         ),
         const SizedBox(width: 8),
-        Text(
+        Expanded(
+            child: Text(
           'LysTing',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: design.brandTitleSize,
+            fontSize: MediaQuery.sizeOf(context).width < 640 ? 18 : 24,
             fontWeight: FontWeight.w900,
             letterSpacing: 0,
             color: AppDesign.brandTitleColor,
@@ -1745,7 +1721,7 @@ class _BrandLockup extends StatelessWidget {
               ),
             ],
           ),
-        ),
+        )),
       ],
     );
   }
@@ -1787,8 +1763,10 @@ class _PrimaryButton extends StatelessWidget {
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: design.primaryButtonPaddingX,
-              vertical: design.primaryButtonPaddingY,
+              horizontal: MediaQuery.sizeOf(context).width < 640
+                  ? 14
+                  : design.primaryButtonPaddingX,
+              vertical: 14,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1798,7 +1776,10 @@ class _PrimaryButton extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                  ).copyWith(fontSize: design.primaryButtonTextSize),
+                  ).copyWith(
+                      fontSize: MediaQuery.sizeOf(context).width < 640
+                          ? 13
+                          : design.primaryButtonTextSize),
                 ),
               ],
             ),
@@ -2126,54 +2107,25 @@ class _HeroCopy extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final height = constraints.maxHeight;
-        final width = constraints.maxWidth;
-        final scale = (height / 100).clamp(0.82, 1.0);
-        final wordmarkTop =
-            (height * 0.5) - (AppDesign.wordmarkBaseHeight * scale * 0.62);
-        final tunedWordmarkTop = wordmarkTop + design.wordmarkOffsetY * scale;
-        final subtitleTop = (height * 0.5) + (20 * scale);
-        final tunedSubtitleTop =
-            subtitleTop + design.heroSubtitleOffsetY * scale;
-
-        return SizedBox(
-          width: width,
-          height: height,
-          child: Stack(
-            clipBehavior: Clip.hardEdge,
-            children: [
-              Positioned(
-                top: tunedWordmarkTop,
-                left: 0,
-                right: 0,
-                child: Transform.translate(
-                  offset: Offset(design.wordmarkOffsetX * scale, 0),
-                  child: Transform.scale(
-                    scale: scale,
-                    alignment: Alignment.topCenter,
-                    child: Center(
-                      child: _BigWordmark(
-                        design: design,
-                      ),
-                    ),
-                  ),
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              flex: 4,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: 340,
+                  height: 68,
+                  child: _BigWordmark(design: design),
                 ),
               ),
-              Positioned(
-                top: tunedSubtitleTop,
-                left: 0,
-                right: 0,
-                child: Transform.translate(
-                  offset: Offset(design.heroSubtitleOffsetX * scale, 0),
-                  child: Transform.scale(
-                    scale: scale,
-                    alignment: Alignment.topCenter,
-                    child: const Center(child: _HeroSunTitle()),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 2),
+            const Flexible(
+              child: FittedBox(fit: BoxFit.scaleDown, child: _HeroSunTitle()),
+            ),
+          ],
         );
       },
     );
@@ -2196,6 +2148,28 @@ class _BigWordmark extends StatelessWidget {
         );
         final scale = markWidth / AppDesign.wordmarkMaxWidth;
 
+        final wordStyle = TextStyle(
+          fontFamily: 'sans-serif',
+          fontSize: AppDesign.wordmarkBaseFontSize * scale,
+          fontWeight: FontWeight.w900,
+          height: .95,
+          color: AppDesign.wordmarkColor,
+        );
+        double measure(String text) {
+          final painter = TextPainter(
+              text: TextSpan(text: text, style: wordStyle),
+              textDirection: TextDirection.ltr)
+            ..layout();
+          final width = painter.width;
+          painter.dispose();
+          return width;
+        }
+
+        final skySize = design.sunSize * scale;
+        final skyLeft = (markWidth - measure('LysTıng')) / 2 +
+            measure('LysT') +
+            measure('ı') / 2 -
+            skySize / 2;
         return SizedBox(
           width: markWidth,
           height: AppDesign.wordmarkBaseHeight * scale,
@@ -2227,19 +2201,9 @@ class _BigWordmark extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: design.sunLeft * scale,
-                top: design.sunTop * scale,
-                child: Icon(
-                  Icons.wb_sunny_rounded,
-                  size: design.sunSize * scale,
-                  color: AppDesign.sunColor,
-                  shadows: const [
-                    Shadow(
-                      color: Color(0x66FFB938),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
+                left: skyLeft,
+                top: 6 * scale,
+                child: _LocalSkyIcon(size: skySize),
               ),
             ],
           ),
@@ -2247,6 +2211,110 @@ class _BigWordmark extends StatelessWidget {
       },
     );
   }
+}
+
+bool isLocalDaytime(DateTime time) => time.hour >= 6 && time.hour < 18;
+
+class _LocalSkyIcon extends StatefulWidget {
+  const _LocalSkyIcon({required this.size});
+  final double size;
+  @override
+  State<_LocalSkyIcon> createState() => _LocalSkyIconState();
+}
+
+class _LocalSkyIconState extends State<_LocalSkyIcon> {
+  late bool _day = isLocalDaytime(DateTime.now());
+  late final Timer _timer;
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      final day = isLocalDaytime(DateTime.now());
+      if (day != _day) setState(() => _day = day);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: _day ? 'Daytime' : 'Nighttime',
+        child: _BrandSymbol(
+          kind: _day ? 'sun' : 'moon',
+          size: widget.size,
+          color: AppDesign.sunColor,
+        ),
+      );
+}
+
+// Draw new brand symbols directly so an older cached icon font cannot hide them.
+class _BrandSymbol extends StatelessWidget {
+  const _BrandSymbol({required this.kind, required this.size, this.color});
+  final String kind;
+  final double size;
+  final Color? color;
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+        size: Size.square(size),
+        painter: _BrandSymbolPainter(kind,
+            color ?? IconTheme.of(context).color ?? const Color(0xFF475569)),
+      );
+}
+
+class _BrandSymbolPainter extends CustomPainter {
+  const _BrandSymbolPainter(this.kind, this.color);
+  final String kind;
+  final Color color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 24, size.height / 24);
+    final paint = Paint()..color = color;
+    if (kind == 'moon') {
+      final outer = Path()..addOval(const Rect.fromLTWH(2, 2, 20, 20));
+      final cutout = Path()..addOval(const Rect.fromLTWH(8, -3, 20, 20));
+      canvas.drawPath(
+          Path.combine(PathOperation.difference, outer, cutout), paint);
+    } else if (kind == 'sun') {
+      canvas.drawCircle(const Offset(12, 12), 5, paint);
+      paint
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round;
+      for (var i = 0; i < 8; i++) {
+        final angle = i * math.pi / 4;
+        canvas.drawLine(
+            Offset(12 + math.cos(angle) * 8, 12 + math.sin(angle) * 8),
+            Offset(12 + math.cos(angle) * 11, 12 + math.sin(angle) * 11),
+            paint);
+      }
+    } else if (kind == 'phone') {
+      paint
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8;
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(
+              const Rect.fromLTWH(6, 2, 12, 20), const Radius.circular(2.5)),
+          paint);
+      canvas.drawLine(const Offset(10, 18.5), const Offset(14, 18.5), paint);
+    } else {
+      for (var row = 0; row < 2; row++) {
+        for (var col = 0; col < 2; col++) {
+          canvas.drawRRect(
+              RRect.fromRectAndRadius(
+                  Rect.fromLTWH(3 + col * 10, 3 + row * 10, 8, 8),
+                  const Radius.circular(1.5)),
+              paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BrandSymbolPainter oldDelegate) =>
+      oldDelegate.kind != kind || oldDelegate.color != color;
 }
 
 class _HeroSunTitle extends StatelessWidget {
@@ -2423,18 +2491,14 @@ class _SolutionsSection extends StatelessWidget {
         icon: Icons.shopping_cart_outlined,
         iconBg: const Color(0xFF275AE5),
         title: 'LysTing App',
-        subtitle: 'Your local solution hub',
+        subtitle: 'Your local service solution hub',
         bullets: [
-          'Food',
-          'Products',
-          'Services',
-          'Store-Based Gallery',
-          'Product-Based Gallery',
-          'Agent Product Upload via Mobile App',
-          'Bulk Upload',
-          'Review-Based Products',
-          'Easy Analytics for Agent',
-          'Supports iOS, Android, Web',
+          'Discover Local Services',
+          'Connect with Service Providers',
+          'Manage Service Requests',
+          'Customer and Provider Chat',
+          'Android Launch Coming Soon',
+          'Food and Products: Future Updates',
         ],
         accent: const Color(0xFF2B5BFF),
         visual: const _CartVisual(),
@@ -2471,82 +2535,77 @@ class _SolutionsSection extends StatelessWidget {
       ),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = items.length;
-
-        final useFixedMobileRow = fitMobileRow;
-        const dotGap = 8.0;
-        final viewportHeight = MediaQuery.sizeOf(context).height;
-        final cardWidth = _gridWidth(
-          constraints.maxWidth,
-          columns,
-          design.solutionPhoneGap,
+    if (fitMobileRow) {
+      return LayoutBuilder(builder: (context, constraints) {
+        final width =
+            _gridWidth(constraints.maxWidth, 4, design.solutionPhoneGap);
+        final height = (width * 3).clamp(1.0, constraints.maxHeight);
+        return Center(
+          child: SizedBox(
+            height: height,
+            child: Row(
+              children: [
+                for (var index = 0; index < items.length; index++) ...[
+                  if (index > 0) SizedBox(width: design.solutionPhoneGap),
+                  Expanded(
+                      child: _SolutionCard(
+                    data: items[index],
+                    design: design,
+                    forcedHeight: height,
+                    onTap: () => onCategorySelected(items[index].category),
+                  )),
+                ],
+              ],
+            ),
+          ),
         );
-        final preferredCardMaxHeight = MediaQuery.sizeOf(context).width < 900
-            ? viewportHeight < 760
-                ? 280.0
-                : 320.0
-            : 580.0;
-        final preferredCardHeight =
-            (cardWidth / AppDesign.solutionPhoneAspectRatio)
-                .clamp(190.0, preferredCardMaxHeight);
-        final calculatedCardHeight = maxCardHeight == null
-            ? (useFixedMobileRow ? preferredCardHeight : null)
-            : maxCardHeight!.clamp(190.0, preferredCardHeight);
-        final cardHeight = constraints.maxWidth >= 760
-            ? (calculatedCardHeight != null && calculatedCardHeight > 450
-                ? calculatedCardHeight
-                : 450.0)
-            : calculatedCardHeight;
-        final cards = items
-            .map(
-              (item) => SizedBox(
-                width: cardWidth,
-                height: cardHeight,
-                child: _SolutionCard(
-                  data: item,
-                  design: design,
-                  forcedHeight: cardHeight,
-                  onTap: () => onCategorySelected(item.category),
-                ),
-              ),
-            )
-            .toList();
+      });
+    }
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (useFixedMobileRow)
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (var index = 0; index < cards.length; index++) ...[
-                      if (index > 0) SizedBox(width: design.solutionPhoneGap),
-                      cards[index],
-                    ],
-                  ],
-                ),
-              )
-            else
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: design.solutionPhoneGap,
-                runSpacing: AppDesign.solutionPhoneRunGap,
-                children: cards,
-              ),
-            if ((items.length / columns).ceil() > 1) ...[
-              SizedBox(height: dotGap),
-              _CarouselDots(
-                count: (items.length / columns).ceil(),
-                activeIndex: 0,
-              ),
+    return LayoutBuilder(builder: (context, constraints) {
+      const gap = 12.0;
+      // On wide, short screens one row keeps the square cards readable.
+      final columns = constraints.maxWidth >= 1000 ||
+              constraints.maxWidth > constraints.maxHeight * 3
+          ? 4
+          : 2;
+      final rows = (items.length / columns).ceil();
+      final cardWidth = _gridWidth(constraints.maxWidth, columns, gap);
+      final cardHeight = ((constraints.maxHeight - gap * (rows - 1)) / rows)
+          .clamp(1.0, double.infinity);
+      final metrics =
+          _compactFrameMetrics(context, items, design, cardWidth, cardHeight);
+      return Center(
+        child: SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Column(children: [
+            for (var row = 0; row < rows; row++) ...[
+              if (row > 0) const SizedBox(height: gap),
+              Row(children: [
+                for (var column = 0; column < columns; column++) ...[
+                  if (column > 0) const SizedBox(width: gap),
+                  SizedBox(
+                    width: cardWidth,
+                    height: cardHeight,
+                    child: _SolutionCard(
+                      data: items[row * columns + column],
+                      design: design,
+                      forcedHeight: cardHeight,
+                      contentScale: metrics.$1,
+                      headerHeight: metrics.$2,
+                      textScale: metrics.$3,
+                      onTap: () => onCategorySelected(
+                          items[row * columns + column].category),
+                    ),
+                  ),
+                ],
+              ]),
             ],
-          ],
-        );
-      },
-    );
+          ]),
+        ),
+      );
+    });
   }
 }
 
@@ -2628,33 +2687,131 @@ class _SolutionCardData {
   final Widget visual;
 }
 
+(double, double, double) _compactFrameMetrics(
+    BuildContext context,
+    List<_SolutionCardData> items,
+    _DesignTuning design,
+    double cardWidth,
+    double cardHeight) {
+  double measure(String text, double fontSize, double width, double height,
+      FontWeight weight, int lines) {
+    final painter = TextPainter(
+      text: TextSpan(
+          text: text,
+          style: Theme.of(context).textTheme.bodyMedium!.merge(TextStyle(
+              fontSize: fontSize, height: height, fontWeight: weight))),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: lines,
+    )..layout(maxWidth: math.max(1, width));
+    final value = painter.height;
+    painter.dispose();
+    return value;
+  }
+
+  final scale = math
+      .min(cardWidth / design.solutionPhoneMaxWidth, cardHeight / 520)
+      .clamp(.05, .75);
+  (double, double) heights(double typeScale) {
+    final width = cardWidth - 56 * scale;
+    double header = 0;
+    double bullets = 0;
+    for (final item in items) {
+      final titleSize = (item.title.length > 12
+              ? design.solutionTitleSize - 2
+              : design.solutionTitleSize) *
+          typeScale;
+      final title =
+          measure(item.title, titleSize, width, 1.16, FontWeight.w900, 2);
+      final subtitle = item.subtitle == null
+          ? 0.0
+          : 4 * scale +
+              measure(
+                  item.subtitle!,
+                  (design.solutionSubtitleSize - 1) * typeScale,
+                  width,
+                  1.22,
+                  FontWeight.w700,
+                  typeScale < .7 ? 2 : 3);
+      header = math.max(header, title + subtitle);
+      double itemBullets = 0;
+      for (final bullet in item.bullets) {
+        final textHeight = measure(
+            bullet,
+            (design.solutionBulletSize - 1.2) * typeScale,
+            width - 14.5 * scale,
+            1.2,
+            FontWeight.w500,
+            2);
+        itemBullets += math.max(6.5 * scale, textHeight) + 4 * scale;
+      }
+      bullets = math.max(bullets, itemBullets);
+    }
+    // Shell, screen padding, icon, gaps and the bottom arrow row.
+    final footerText = measure(
+        'Learn More',
+        design.solutionLearnMoreSize * typeScale,
+        width,
+        1.4,
+        FontWeight.w800,
+        1);
+    return (
+      177 * scale + header + bullets + math.max(0, footerText - 30 * scale) + 6,
+      header + 4
+    );
+  }
+
+  double low = .01;
+  double high = 1.65;
+  for (var i = 0; i < 18; i++) {
+    final middle = (low + high) / 2;
+    if (heights(middle).$1 <= cardHeight - 3) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+  return (scale, heights(low).$2, low);
+}
+
 class _SolutionCard extends StatelessWidget {
   const _SolutionCard({
     required this.data,
     required this.design,
     required this.onTap,
     this.forcedHeight,
+    this.contentScale,
+    this.headerHeight,
+    this.textScale,
   });
 
   final _SolutionCardData data;
   final _DesignTuning design;
   final VoidCallback onTap;
   final double? forcedHeight;
+  final double? contentScale;
+  final double? headerHeight;
+  final double? textScale;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final square = forcedHeight != null &&
+            (constraints.maxWidth - forcedHeight!).abs() < 1;
         final naturalHeight =
             design.solutionPhoneMaxWidth / AppDesign.solutionPhoneAspectRatio;
         final scaleByWidth =
             constraints.maxWidth / design.solutionPhoneMaxWidth;
-        final scaleByHeight =
-            forcedHeight == null ? 1.0 : forcedHeight! / naturalHeight;
-        final widthScale = scaleByWidth.clamp(0.42, 1.0);
-        final heightScale = scaleByHeight.clamp(0.42, 1.0);
-        final scale = widthScale < heightScale ? widthScale : heightScale;
-        final bulletTextSize = (design.solutionBulletSize - 1.2) * scale;
+        final scaleByHeight = forcedHeight == null
+            ? 1.0
+            : forcedHeight! / (naturalHeight * (square ? 1.7 : 1.35));
+        final widthScale = scaleByWidth.clamp(0.16, 1.0);
+        final heightScale = scaleByHeight.clamp(square ? 0.05 : 0.12, 1.0);
+        final scale = contentScale ??
+            (widthScale < heightScale ? widthScale : heightScale);
+        final typeScale = textScale ?? scale;
+        final bulletTextSize = (design.solutionBulletSize - 1.2) * typeScale;
         final bulletDotSize = 6.5 * scale;
         final bulletBottomGap = 4.0 * scale;
         final aspectRatio = forcedHeight == null
@@ -2777,7 +2934,7 @@ class _SolutionCard extends StatelessWidget {
                                       ),
                                       SizedBox(height: 12 * scale),
                                       SizedBox(
-                                        height: 58 * scale,
+                                        height: headerHeight ?? 104 * scale,
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -2792,9 +2949,9 @@ class _SolutionCard extends StatelessWidget {
                                                 fontSize: data.title.length > 12
                                                     ? (design.solutionTitleSize -
                                                             2) *
-                                                        scale
+                                                        typeScale
                                                     : design.solutionTitleSize *
-                                                        scale,
+                                                        typeScale,
                                                 fontWeight: FontWeight.w900,
                                                 height: 1.16,
                                               ),
@@ -2806,7 +2963,7 @@ class _SolutionCard extends StatelessWidget {
                                                 maxLines: data.subtitle!
                                                         .contains('\n')
                                                     ? 2
-                                                    : scale < 0.7
+                                                    : typeScale < 0.7
                                                         ? 2
                                                         : 3,
                                                 overflow: TextOverflow.ellipsis,
@@ -2815,7 +2972,7 @@ class _SolutionCard extends StatelessWidget {
                                                   fontSize:
                                                       (design.solutionSubtitleSize -
                                                               1) *
-                                                          scale,
+                                                          typeScale,
                                                   fontWeight: FontWeight.w700,
                                                   height: 1.22,
                                                 ),
@@ -2880,7 +3037,7 @@ class _SolutionCard extends StatelessWidget {
                                                 color: data.accent,
                                                 fontSize: design
                                                         .solutionLearnMoreSize *
-                                                    scale,
+                                                    typeScale,
                                                 fontWeight: FontWeight.w800,
                                               ),
                                             ),
@@ -3127,6 +3284,10 @@ class _FeatureDetailScreenState extends State<FeatureDetailScreen> {
                       _CategoryDock(
                         selectedCategory: _selectedCategory,
                         onSelected: (category) {
+                          if (category == FeatureCategory.ecommerce) {
+                            openLysTingAndroid(context);
+                            return;
+                          }
                           if (category == _selectedCategory) {
                             Navigator.of(context).pop();
                             return;
@@ -4024,8 +4185,7 @@ class _LysBookAppsPanel extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(22),
                 onTap: () => navigateToUrl(
-                  Uri.base.host == '127.0.0.1' ||
-                          Uri.base.host == 'localhost'
+                  Uri.base.host == '127.0.0.1' || Uri.base.host == 'localhost'
                       ? 'http://127.0.0.1:7358/'
                       : 'https://keyboard-ui-notes.pages.dev/',
                 ),
@@ -4039,8 +4199,7 @@ class _LysBookAppsPanel extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0F172A)
-                            .withValues(alpha: 0.08),
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.08),
                         blurRadius: 24,
                         offset: const Offset(0, 12),
                       ),
@@ -8404,7 +8563,7 @@ class _DownloadSection extends StatelessWidget {
                 : scale;
         final gap = 14.0 * compactScale;
         final title = Text(
-          'Download our apps',
+          'LysTing mobile',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -8417,18 +8576,38 @@ class _DownloadSection extends StatelessWidget {
         final badges = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _StoreBadge(
-              icon: Icons.play_arrow_rounded,
-              title: 'GET IT ON',
-              label: 'Google Play',
-              scale: compactScale,
+            InkWell(
+              onTap: () => openLysTingAndroid(context),
+              child: _StoreBadge(
+                icon: Icons.play_arrow_rounded,
+                title: isPublicGooglePlayListing(googlePlayListing)
+                    ? 'GET IT ON'
+                    : 'COMING SOON',
+                label: 'Google Play',
+                scale: compactScale,
+              ),
             ),
             SizedBox(width: gap),
-            _StoreBadge(
-              icon: Icons.apple_rounded,
-              title: 'Download on the',
-              label: 'App Store',
-              scale: compactScale,
+            InkWell(
+              onTap: () => showDialog<void>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('iOS is coming later'),
+                  content:
+                      const Text('The iOS app is planned for a later release.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: const Text('OK'))
+                  ],
+                ),
+              ),
+              child: _StoreBadge(
+                icon: Icons.apple_rounded,
+                title: 'LATER PHASE',
+                label: 'iOS',
+                scale: compactScale,
+              ),
             ),
           ],
         );
@@ -8454,13 +8633,8 @@ class _DownloadSection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: compact && constraints.maxWidth < 520
-                    ? (constraints.maxWidth * 0.42).clamp(118.0, 170.0)
-                    : (constraints.maxWidth * 0.38).clamp(220.0, 420.0),
-                child: title,
-              ),
-              const Spacer(),
+              Expanded(child: title),
+              SizedBox(width: gap),
               badges,
             ],
           ),

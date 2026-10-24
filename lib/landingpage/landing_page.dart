@@ -240,6 +240,18 @@ class _PhoneShowcase extends StatelessWidget {
               'For Wholesalers',
             ],
           ),
+          _PhoneCard(
+            title: 'LysBook',
+            subtitle: 'Your local business directory',
+            icon: Icons.menu_book_rounded,
+            accent: Color(0xFF7C4DFF),
+            bullets: [
+              'Discover Local Businesses',
+              'Explore Products & Services',
+              'Save Your Favourite Places',
+              'Connect With Local Providers',
+            ],
+          ),
         ];
 
         return Column(
@@ -266,6 +278,7 @@ class _PhoneShowcase extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 _Dot(active: true),
+                _Dot(),
                 _Dot(),
                 _Dot(),
               ],
