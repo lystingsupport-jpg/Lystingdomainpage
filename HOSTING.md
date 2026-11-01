@@ -6,9 +6,9 @@ Local launch changes: LysTing App and Google Play badge open the public store UR
 
 ## Build
 
-Before launch: `flutter build web --release`
+Before launch: `sh tool/build_web.sh`
 
-After public Google Play approval: `flutter build web --release --dart-define=LYSTING_GOOGLE_PLAY_URL=https://play.google.com/store/apps/details?id=YOUR_ACTUAL_PACKAGE_ID`
+After public Google Play approval: `sh tool/build_web.sh --dart-define=LYSTING_GOOGLE_PLAY_URL=https://play.google.com/store/apps/details?id=YOUR_ACTUAL_PACKAGE_ID`
 
 Replace YOUR_ACTUAL_PACKAGE_ID with the package ID shown in Console. Then deploy the generated build/web directory. Existing npm deploy commands build without this value, so for a published listing use the configured build above followed by the direct deploy command below.
 
@@ -23,3 +23,7 @@ Replace YOUR_ACTUAL_PACKAGE_ID with the package ID shown in Console. Then deploy
 7. Confirm HTTPS and apex/www behavior once DNS is active.
 
 Policy pages in the mobile repository are drafts and must not be copied into a published site until finalized. This deployment does not deploy the mobile app backend or implement account-data cleanup.
+
+## Mobile browser updates
+
+Use the build script above (or `npm run build`) for every release. It disables new offline workers and publishes a retirement worker at the previous Flutter worker URL. Existing visitors receive a one-time refresh after the old Flutter caches are cleared; unrelated browser data is preserved. This prevents old layouts persisting in Safari.

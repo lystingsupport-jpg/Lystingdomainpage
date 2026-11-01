@@ -17,6 +17,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     for (final size in [
       const Size(320, 480),
+      const Size(375, 548),
+      const Size(375, 667),
       const Size(390, 844),
       const Size(430, 932),
       const Size(844, 390),
