@@ -335,7 +335,7 @@ class _LandingPageState extends State<LandingPage> {
                       onContactTap: _showContactDialog,
                       onCategorySelected: (category) {
                         if (category == FeatureCategory.ecommerce) {
-                          openLysTingAndroid(context);
+                          navigateToUrl('/app/');
                           return;
                         }
                         Navigator.of(context).push(
@@ -2564,11 +2564,8 @@ class _SolutionsSection extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, constraints) {
       const gap = 12.0;
-      // On wide, short screens one row keeps the square cards readable.
-      final columns = constraints.maxWidth >= 1000 ||
-              constraints.maxWidth > constraints.maxHeight * 3
-          ? 4
-          : 2;
+      // Cards view always uses two columns on phones, tablets and desktops.
+      const columns = 2;
       final rows = (items.length / columns).ceil();
       final cardWidth = _gridWidth(constraints.maxWidth, columns, gap);
       final cardHeight = ((constraints.maxHeight - gap * (rows - 1)) / rows)

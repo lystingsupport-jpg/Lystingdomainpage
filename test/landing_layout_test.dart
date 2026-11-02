@@ -45,11 +45,7 @@ void main() {
       final app = tester.getRect(find.text('LysTing App'));
       final mart = tester.getRect(find.text('LysMart'));
       expect(iot.left, lessThan(app.left));
-      if (size.width >= 1000 || size.width > size.height * 2) {
-        expect(iot.top, closeTo(mart.top, 2));
-      } else {
-        expect(iot.top, lessThan(mart.top));
-      }
+      expect(iot.top, lessThan(mart.top));
       final firstFrame = tester.getRect(find
           .ancestor(
               of: find.text('LysTing Smart IoT'),
